@@ -13,12 +13,13 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23962a22'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23f6f0e1' font-family='serif' font-weight='900'%3E關%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --paper:#ece2c9;--paper2:#f6f0e1;--ink:#2a2118;--muted:#6f604b;--line:#c7b58c;
   --east:#2d4777;--eastL:#6f8cc0;--west:#962a22;--westL:#cf6a5f;--waver:#8f8150;--gold:#c59a2c;
   --ok:#3d6b3a;--bad:#9a2b25;
+  --brush:"LXGW WenKai TC","Noto Serif TC","PMingLiU",serif;--wood:#231a12;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -191,6 +192,50 @@ button{font-family:inherit;cursor:pointer}
 .pro p{font-size:17px;line-height:2.1;text-align:justify}
 .pro .yr{font-size:13px;letter-spacing:.3em;color:var(--muted)}
 .res-e{color:var(--east)} .res-w{color:var(--west)}
+
+/* ===== 美術強化 v2c ===== */
+#title::before{content:"";position:fixed;left:0;right:0;bottom:0;height:46vh;pointer-events:none;z-index:-1;opacity:.5;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%236b5a40' stop-opacity='.55'/%3E%3Cstop offset='1' stop-color='%236b5a40' stop-opacity='0'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%232a2118' stop-opacity='.6'/%3E%3Cstop offset='1' stop-color='%232a2118' stop-opacity='.05'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M0 230 L90 170 L160 205 L260 120 L340 190 L420 150 L520 210 L640 110 L730 180 L820 140 L930 200 L1040 130 L1120 175 L1200 150 L1200 400 L0 400Z' fill='url(%23a)'/%3E%3Cpath d='M0 300 L120 240 L210 285 L330 215 L450 290 L560 250 L700 300 L820 230 L950 285 L1080 240 L1200 280 L1200 400 L0 400Z' fill='url(%23b)'/%3E%3C/svg%3E") bottom/100% 100% no-repeat}
+.t-main,.side-card h2,.mcard h2,#tcard .k,.topbar .clock{font-family:var(--brush)}
+.topbar{position:sticky;top:0;z-index:20;border-bottom:2px solid var(--gold);
+  background-color:#1d1610;
+  background-image:radial-gradient(circle at 50% 100%,transparent 9px,rgba(197,154,44,.13) 10px,transparent 11px,transparent 14px,rgba(197,154,44,.09) 15px,transparent 16px),
+  radial-gradient(circle at 0 50%,transparent 9px,rgba(197,154,44,.13) 10px,transparent 11px,transparent 14px,rgba(197,154,44,.09) 15px,transparent 16px);
+  background-size:32px 16px;box-shadow:0 3px 12px rgba(0,0,0,.35)}
+.topbar .clock{font-size:23px;color:#f3dfa6;text-shadow:0 0 12px rgba(229,185,60,.35)}
+.mapbox{background:var(--wood);
+  background-image:radial-gradient(ellipse at 50% 40%,rgba(120,85,40,.35),transparent 70%),
+  repeating-linear-gradient(92deg,rgba(255,255,255,.018) 0 2px,transparent 2px 9px);}
+.mapwrap{padding:16px}
+#map{box-shadow:0 0 0 2px #8a6a3c,0 0 0 7px #2e2318,0 0 0 8px rgba(197,154,44,.45),0 16px 40px rgba(0,0,0,.6);border-radius:2px;background:#d9cba5}
+@media(min-width:981px){
+  .mapbox{position:sticky;top:46px;height:calc(100vh - 46px);display:flex;align-items:center;justify-content:center}
+  .mapwrap{width:100%;max-height:100%}
+  #map{max-height:calc(100vh - 82px)}
+}
+.lbl{font-family:var(--brush);fill:#3a2a16;stroke:#f1e7cd;stroke-width:3.5px;stroke-linejoin:round}
+.lbl.big{font-size:17px;font-weight:700;letter-spacing:.18em}
+.lbl.road{font-size:10.5px;fill:#6b4c26;font-weight:400;letter-spacing:.25em}
+.utxt{font-family:var(--brush)}
+.nobori{transform-box:fill-box;transform-origin:0 50%;animation:flutter 2.6s ease-in-out infinite}
+.unit:nth-child(3n) .nobori{animation-duration:3.1s;animation-delay:-.8s}
+.unit:nth-child(4n+1) .nobori{animation-duration:2.2s;animation-delay:-1.5s}
+@keyframes flutter{0%,100%{transform:skewY(0) scaleX(1)}35%{transform:skewY(-7deg) scaleX(.9)}70%{transform:skewY(4deg) scaleX(1.04)}}
+.flow{animation:flow 3.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-36}}
+.aside{background:#efe5cb;background-image:radial-gradient(rgba(120,90,40,.06) 1px,transparent 1px);background-size:4px 4px}
+.box{background:#fffaf0;border-color:#cdb98d;box-shadow:0 1px 0 #fff inset,0 2px 6px rgba(70,50,20,.08);position:relative}
+.box h3{font-family:var(--brush);font-size:16.5px;padding-left:10px;position:relative}
+.box h3::before{content:"";position:absolute;left:0;top:3px;bottom:3px;width:4px;background:var(--west);border-radius:1px}
+.btn.go{background:linear-gradient(#3a2c1e,#1d1610);border:1px solid var(--gold);color:#f3dfa6;font-family:var(--brush);font-size:19px;letter-spacing:.3em;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+.btn.go:hover:not(:disabled){background:linear-gradient(#4a3826,#241a12)}
+#amb{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:4}
+#amb i{position:absolute;top:-10px;width:3px;height:3px;border-radius:50%;opacity:0}
+#amb.ash i{background:rgba(90,82,72,.55);animation:ash linear infinite}
+#amb.ember i{background:#ffb347;box-shadow:0 0 6px 2px rgba(255,140,40,.7);top:auto;bottom:-10px;animation:ember linear infinite}
+@keyframes ash{0%{opacity:0;transform:translate(0,0)}10%{opacity:1}100%{opacity:0;transform:translate(60px,105vh)}}
+@keyframes ember{0%{opacity:0;transform:translate(0,0)}15%{opacity:.9}100%{opacity:0;transform:translate(-40px,-90vh)}}
+@media(prefers-reduced-motion:reduce){.nobori,.flow,#amb i,.fogc{animation:none!important}}
 </style>
 </head>
 <body>
@@ -245,7 +290,7 @@ button{font-family:inherit;cursor:pointer}
   <div class="layout">
     <div class="mapbox" id="mapbox">
       <div class="mapwrap"><svg id="map"></svg></div>
-      <div id="herald"></div>
+      <div id="amb"></div><div id="herald"></div>
       <div id="tcard"><div class="in"></div></div>
     </div>
     <aside class="aside">
@@ -458,33 +503,67 @@ const crestOf=(u,size)=>crest(CREST[u.id]||'char',u.short,size);
 const svg=document.getElementById('map');
 const VW=2*M+SQ*S*(W+0.5), VH=2*M+2*S+1.5*S*(H-1);
 function hexPts(cx,cy,s=S){let p=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);p.push((cx+s*Math.cos(a)).toFixed(1)+','+(cy+s*Math.sin(a)).toFixed(1));}return p.join(' ');}
-const TCOL={p:'#e5d9b6',h:'#cdb985',m:'#a8946a',f:'#b4bb8a',r:'#a7c3c4',v:'#e2cfa1'};
+const TCOL={p:'#e6d8b0',h:'#d3bd86',m:'#b39d70',f:'#b9bd8a',r:'#a9c4c2',v:'#e3cf9e'};
+function hsh(c,r){let h=(c*374761393+r*668265263)>>>0;h=(h^(h>>>13))*1274126177>>>0;return (h%1000)/1000;}
+function shade(hex,k){const n=parseInt(hex.slice(1),16);let R=n>>16,G=n>>8&255,B=n&255;const f=v=>Math.round(k<0?v*(1+k):v+(255-v)*k);return '#'+[f(R),f(G),f(B)].map(v=>Math.max(0,Math.min(255,v)).toString(16).padStart(2,'0')).join('');}
+function smooth(pts){
+  if(pts.length<3) return 'M'+pts.map(p=>p.join(' ')).join(' L');
+  let d=`M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for(let i=0;i<pts.length-1;i++){
+    const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+    d+=` C${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)} ${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)} ${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  return d;
+}
+const PAPER=(f,o,sz,a)=>"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='${sz}' height='${sz}'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='${f}' numOctaves='${o}' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .32 0 0 0 0 .23 0 0 0 0 .1 0 0 0 ${a} 0'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>`);
 function buildBoard(){
   let s=`<defs><filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.4" flood-color="#2a1d0c" flood-opacity=".45"/></filter>
-  <radialGradient id="fogg"><stop offset="0" stop-color="#f4f4f0" stop-opacity=".95"/><stop offset=".6" stop-color="#f4f4f0" stop-opacity=".55"/><stop offset="1" stop-color="#f4f4f0" stop-opacity="0"/></radialGradient></defs>`;
+  <radialGradient id="fogg"><stop offset="0" stop-color="#f4f4f0" stop-opacity=".95"/><stop offset=".6" stop-color="#f4f4f0" stop-opacity=".55"/><stop offset="1" stop-color="#f4f4f0" stop-opacity="0"/></radialGradient>
+  <linearGradient id="mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b3022" stop-opacity=".85"/><stop offset=".55" stop-color="#6d5b3e" stop-opacity=".45"/><stop offset="1" stop-color="#8c7a58" stop-opacity="0"/></linearGradient>
+  <linearGradient id="mtn2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a6a4c" stop-opacity=".55"/><stop offset="1" stop-color="#a08c66" stop-opacity="0"/></linearGradient>
+  <linearGradient id="hil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a7244" stop-opacity=".5"/><stop offset="1" stop-color="#8a7244" stop-opacity="0"/></linearGradient>
+  <radialGradient id="vig" cx="50%" cy="50%" r="72%"><stop offset=".62" stop-color="#3a2810" stop-opacity="0"/><stop offset="1" stop-color="#3a2810" stop-opacity=".42"/></radialGradient>
+  <radialGradient id="gE" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#5d80be"/><stop offset=".55" stop-color="#2d4777"/><stop offset="1" stop-color="#16284a"/></radialGradient>
+  <radialGradient id="gW" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#d0574a"/><stop offset=".55" stop-color="#962a22"/><stop offset="1" stop-color="#5a130e"/></radialGradient>
+  <radialGradient id="gV" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#bba975"/><stop offset=".6" stop-color="#9b8b57"/><stop offset="1" stop-color="#5f5330"/></radialGradient>
+  <radialGradient id="gO" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#a9a396"/><stop offset="1" stop-color="#5e5850"/></radialGradient>
+  <pattern id="pap1" width="220" height="220" patternUnits="userSpaceOnUse"><image href="${PAPER(.85,3,220,.22)}" width="220" height="220"/></pattern>
+  <pattern id="pap2" width="600" height="600" patternUnits="userSpaceOnUse"><image href="${PAPER(.012,3,600,.5)}" width="600" height="600"/></pattern></defs>`;
   s+=`<rect x="0" y="0" width="${VW}" height="${VH}" fill="#d9cba5"/><g id="board">`;
   for(let r=0;r<H;r++)for(let c=0;c<W;c++){
     const [x,y]=px(c,r),t=T[r][c];
-    s+=`<polygon class="hx" points="${hexPts(x,y)}" fill="${TCOL[t]}" data-c="${c}" data-r="${r}"/>`+glyph(t,x,y,c,r);
+    s+=`<polygon class="hx" points="${hexPts(x,y)}" fill="${shade(TCOL[t],(hsh(c,r)-.5)*.09)}" data-c="${c}" data-r="${r}"/>`;
   }
   s+='</g><g id="deco" pointer-events="none">';
-  RIVERS.forEach(rv=>{s+=`<polyline points="${rv.map(([c,r])=>px(c,r).join(',')).join(' ')}" fill="none" stroke="#6f9fb0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".75"/>`;});
-  ROADS.forEach(rd=>{s+=`<polyline points="${rd.map(([c,r])=>px(c,r).join(',')).join(' ')}" fill="none" stroke="#8a6a3c" stroke-width="3" stroke-dasharray="7 4" stroke-linecap="round" opacity=".8"/>`;});
-  s+=`</g><rect id="tint" x="0" y="0" width="${VW}" height="${VH}" fill="#c9d6e3" opacity="0"/><g id="labels">`;
-  LABELS.forEach(([t,c,r,big])=>{const [x,y]=px(c,Math.floor(r));s+=`<text class="lbl${big?' big':''}" x="${x}" y="${y+(big?-12:16)}" text-anchor="middle">${t}</text>`;});
-  s+='</g><g id="hl"></g><g id="units"></g><g id="fog">';
+  for(let r=0;r<H;r++)for(let c=0;c<W;c++){const [x,y]=px(c,r);s+=glyph(T[r][c],x,y,c,r);}
+  RIVERS.forEach(rv=>{const d=smooth(rv.map(([c,r])=>px(c,r)));
+    s+=`<path d="${d}" fill="none" stroke="#5e8592" stroke-width="12" stroke-linecap="round" opacity=".35"/><path d="${d}" fill="none" stroke="#8fb7bd" stroke-width="7" stroke-linecap="round" opacity=".9"/><path class="flow" d="${d}" fill="none" stroke="#eef6f2" stroke-width="1.4" stroke-dasharray="3 15" stroke-linecap="round" opacity=".8"/>`;});
+  ROADS.forEach(rd=>{const d=smooth(rd.map(([c,r])=>px(c,r)));
+    s+=`<path d="${d}" fill="none" stroke="#f1e4c0" stroke-width="6" stroke-linecap="round" opacity=".55"/><path d="${d}" fill="none" stroke="#7a5a32" stroke-width="2.4" stroke-dasharray="8 5" stroke-linecap="round" opacity=".85"/>`;});
+  s+=`<rect width="${VW}" height="${VH}" fill="url(#pap2)" opacity=".55"/><rect width="${VW}" height="${VH}" fill="url(#pap1)"/>`;
+  s+=compass(VW-34,34)+`</g><rect id="tint" x="0" y="0" width="${VW}" height="${VH}" fill="#c9d6e3" opacity="0"/><g id="labels">`;
+  LABELS.forEach(([t,c,r,big])=>{const [x,y]=px(c,Math.floor(r));s+=`<text class="lbl${big?' big':' road'}" x="${x}" y="${y+(big?-14:16)}" text-anchor="middle">${t}</text>`;});
+  s+=`</g><rect width="${VW}" height="${VH}" fill="url(#vig)" pointer-events="none"/><g id="hl"></g><g id="units"></g><g id="fog">`;
   const fogs=[[120,120,200,90],[380,90,230,100],[650,140,240,95],[860,110,200,90],[200,330,260,110],[520,300,280,120],[800,330,240,110],[110,520,220,100],[420,520,260,110],[720,540,260,100],[930,470,180,90]];
   fogs.forEach(([x,y,rx,ry])=>{s+=`<ellipse class="fogc" cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="url(#fogg)"/>`;});
   s+='</g><g id="fx"></g>';
   svg.setAttribute('viewBox',`0 0 ${VW.toFixed(0)} ${VH.toFixed(0)}`);
   svg.innerHTML=s;
 }
+function compass(x,y){
+  return `<g transform="translate(${x},${y})" opacity=".8"><circle r="19" fill="#f1e7cd" fill-opacity=".7" stroke="#5a4426" stroke-width="1"/><circle r="15" fill="none" stroke="#5a4426" stroke-width=".6" stroke-dasharray="1.5 2"/>
+  <path d="M0 -17 L4 0 L0 4 L-4 0Z" fill="#962a22"/><path d="M0 17 L4 0 L0 -4 L-4 0Z" fill="#5a4426"/><path d="M-17 0 L0 3 L17 0 L0 -3Z" fill="#5a4426" opacity=".5"/>
+  <text y="-22" text-anchor="middle" font-size="11" font-weight="700" fill="#3a2a16" style="font-family:var(--brush)">北</text></g>`;
+}
 function glyph(t,x,y,c,r){
-  const j=((c*7+r*13)%5)-2;
-  if(t==='m') return `<path d="M${x-12} ${y+7} L${x-4+j} ${y-7} L${x+3} ${y+3} L${x+7} ${y-3} L${x+13} ${y+7}" fill="none" stroke="#6d5a3a" stroke-width="1.6" pointer-events="none"/>`;
-  if(t==='h') return `<path d="M${x-11} ${y+6} Q${x+j} ${y-9} ${x+11} ${y+6}" fill="none" stroke="#8c7548" stroke-width="1.5" pointer-events="none"/>`;
-  if(t==='f') return `<g fill="#7f8e55" pointer-events="none"><path d="M${x-8} ${y+6}l5-11 5 11z"/><path d="M${x+1+j} ${y+4}l5-11 5 11z"/><path d="M${x-3} ${y-3}l4-9 4 9z" opacity=".8"/></g>`;
-  if(t==='v') return `<g pointer-events="none" fill="#8b6a40"><path d="M${x-9} ${y+5}v-6l5-4 5 4v6z"/><path d="M${x+2} ${y+7}v-5l4-3 4 3v5z" opacity=".8"/></g>`;
+  const j=((c*7+r*13)%5)-2,k=hsh(c,r);
+  if(t==='m'){const h=13+k*6;
+    return `<g pointer-events="none"><path d="M${x-15} ${y+9} L${x-6} ${y-h*.55} L${x-1} ${y-1} Z" fill="url(#mtn2)"/><path d="M${x-9} ${y+9} Q${x-3+j} ${y-h*.4} ${x+2+j} ${y-h} Q${x+7} ${y-h*.45} ${x+15} ${y+9} Z" fill="url(#mtn)"/><path d="M${x-9} ${y+9} Q${x-3+j} ${y-h*.4} ${x+2+j} ${y-h} Q${x+7} ${y-h*.45} ${x+15} ${y+9}" fill="none" stroke="#33281b" stroke-width="1.3" stroke-linecap="round" opacity=".75"/><path d="M${x+2+j} ${y-h} L${x+3+j} ${y+2}" stroke="#2a2118" stroke-width=".7" opacity=".35"/></g>`;}
+  if(t==='h') return `<g pointer-events="none"><path d="M${x-14} ${y+8} Q${x-2+j} ${y-10} ${x+14} ${y+8}Z" fill="url(#hil)"/><path d="M${x-14} ${y+8} Q${x-2+j} ${y-10} ${x+14} ${y+8}" fill="none" stroke="#7d6538" stroke-width="1.3" stroke-linecap="round" opacity=".8"/><path d="M${x-4} ${y+6} Q${x+4} ${y-2} ${x+10} ${y+7}" fill="none" stroke="#7d6538" stroke-width=".8" opacity=".5"/></g>`;
+  if(t==='f'){const tree=(tx,ty,sc,o)=>`<g transform="translate(${tx},${ty}) scale(${sc})" opacity="${o}"><path d="M0 -12 L5 -5 L2.5 -5 L7 1 L-7 1 L-2.5 -5 L-5 -5Z" fill="#4c5f36"/><path d="M0 -12 L5 -5 L2.5 -5 L7 1 L0 1Z" fill="#33432a" opacity=".45"/><rect x="-.8" y="1" width="1.6" height="3" fill="#4a3a26"/></g>`;
+    return `<g pointer-events="none">${tree(x-7,y+5,.9+k*.2,.85)}${tree(x+6+j*.5,y+3,1+k*.25,1)}${tree(x-1,y-4,.75,.7)}</g>`;}
+  if(t==='v'){const house=(hx,hy,sc)=>`<g transform="translate(${hx},${hy}) scale(${sc})"><rect x="-5" y="-3" width="10" height="6" fill="#f2e6c6" stroke="#5a4426" stroke-width=".6"/><path d="M-7.5 -2.5 L0 -8 L7.5 -2.5 Z" fill="#3e3226"/><rect x="-1.2" y="0" width="2.4" height="3" fill="#5a4426"/></g>`;
+    return `<g pointer-events="none">${house(x-5,y+3,1)}${house(x+6,y+6,.8)}${house(x+3,y-5,.7)}</g>`;}
   return '';
 }
 function atmosphere(){
@@ -495,6 +574,11 @@ function atmosphere(){
   let col='#fff',op=0;
   if(t<=2){col='#b9c8d8';op=.22;}else if(t<=4){col='#d5dde3';op=.12;}else if(t<=10){op=0;}else if(t<=13){col='#f0c26a';op=.08;}else{col='#e0793e';op=.17;}
   ti.setAttribute('fill',col);ti.style.opacity=op;
+  const am=document.getElementById('amb');
+  if(am){
+    if(!am.childElementCount){for(let i=0;i<22;i++){const e=document.createElement('i');e.style.left=(Math.random()*100)+'%';e.style.animationDuration=(7+Math.random()*9)+'s';e.style.animationDelay=(-Math.random()*14)+'s';const z=1.5+Math.random()*2.5;e.style.width=e.style.height=z+'px';am.appendChild(e);}}
+    am.className=state.over?'':t>=12?'ember':t>=5?'ash':'';
+  }
 }
 /* ================= 兵種 ================= */
 const UT={
@@ -508,10 +592,11 @@ function tokenSVG(u){
   const col=u.state==='waver'?'#9b8b57':u.state==='out'?'#8a8478':(u.side==='E'?'#2d4777':'#962a22');
   const flagCol=u.state==='active'?(u.side==='E'?'#6f8cc0':'#cf6a5f'):'#c6b98e';
   const m=clamp(u.morale,0,100)/100;
-  let s=`<line x1="11" y1="-25" x2="11" y2="6" stroke="#2a2118" stroke-width="1.5"/><rect x="11" y="-25" width="8" height="14" fill="${flagCol}" stroke="#2a2118" stroke-width=".8"/>`;
-  s+=`<circle r="15.5" fill="${col}" stroke="${u.cmd?'#e5b93c':'#f6f0e1'}" stroke-width="${u.cmd?3:1.6}" filter="url(#sh)"/>`;
+  const gid=u.state==='waver'?'gV':u.state==='out'?'gO':(u.side==='E'?'gE':'gW');
+  let s=`<line x1="11" y1="-28" x2="11" y2="6" stroke="#2a2118" stroke-width="1.6"/><line x1="11" y1="-27.5" x2="20" y2="-27.5" stroke="#2a2118" stroke-width="1.1"/><g class="nobori"><path d="M11 -27 H20 V-10 L15.5 -12.5 L11 -10Z" fill="${flagCol}" stroke="#2a2118" stroke-width=".7"/><circle cx="15.5" cy="-20" r="2.3" fill="none" stroke="#fff" stroke-width=".9" opacity=".85"/></g>`;
+  s+=`<circle r="15.5" fill="url(#${gid})" stroke="${u.cmd?'#e5b93c':'#f6f0e1'}" stroke-width="${u.cmd?3:1.6}" filter="url(#sh)"/><circle r="12.6" fill="none" stroke="${u.cmd?'#f3d27a':'rgba(240,215,150,.55)'}" stroke-width=".8"/><ellipse cx="-4" cy="-8" rx="7" ry="3.5" fill="#fff" opacity=".13"/>`;
   if(u.state==='active') s+=`<circle r="18.5" fill="none" stroke="${m>.5?'#e8cf7a':m>.25?'#e39a3c':'#d23a2a'}" stroke-width="2.6" stroke-dasharray="${(2*Math.PI*18.5*m).toFixed(1)} 999" transform="rotate(-90)"/>`;
-  s+=`<text y="6" text-anchor="middle" font-size="16" font-weight="900" fill="#fff">${u.short}</text>`;
+  s+=`<text class="utxt" y="6" text-anchor="middle" font-size="17" font-weight="700" fill="#fff" stroke="rgba(0,0,0,.25)" stroke-width=".6" paint-order="stroke">${u.short}</text>`;
   const ut=UT[utype(u)];
   s+=`<circle cx="-15" cy="11" r="7.5" fill="${ut.c}" stroke="#f6f0e1" stroke-width="1.3"/><text x="-15" y="14.6" text-anchor="middle" font-size="10" font-weight="900" fill="#fff">${ut.k}</text>`;
   const tw=26,tf=clamp(u.troops/u.max,0,1);
