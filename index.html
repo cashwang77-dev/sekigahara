@@ -496,6 +496,14 @@ function atmosphere(){
   if(t<=2){col='#b9c8d8';op=.22;}else if(t<=4){col='#d5dde3';op=.12;}else if(t<=10){op=0;}else if(t<=13){col='#f0c26a';op=.08;}else{col='#e0793e';op=.17;}
   ti.setAttribute('fill',col);ti.style.opacity=op;
 }
+/* ================= 兵種 ================= */
+const UT={
+  cannon:{n:'大筒',full:'大筒陣地',k:'筒',c:'#7a2e1d',d:'射程3的大砲，原地不動時可遠距砲擊，攻防穩固但移動慢。'},
+  gun:{n:'鐵砲',full:'鐵砲隊',k:'砲',c:'#b5651d',d:'射程2，原地不動時可先開槍再接敵；霧中無法射擊，是霧散後的主力。'},
+  cav:{n:'騎馬',full:'騎馬精銳',k:'騎',c:'#2f6b3a',d:'機動4，衝得快、攻擊高，適合繞側夾擊與追擊；兵力通常不多，別孤軍深入。'},
+  foot:{n:'足輕',full:'足輕槍隊',k:'足',c:'#5b5348',d:'機動3的一般部隊，靠兵力與地形推進；搭配夾擊（每支+12%）才有威力。'}
+};
+function utype(u){return u.gun>=3?'cannon':u.gun>=2?'gun':u.mov>=4?'cav':'foot';}
 function tokenSVG(u){
   const col=u.state==='waver'?'#9b8b57':u.state==='out'?'#8a8478':(u.side==='E'?'#2d4777':'#962a22');
   const flagCol=u.state==='active'?(u.side==='E'?'#6f8cc0':'#cf6a5f'):'#c6b98e';
@@ -504,6 +512,8 @@ function tokenSVG(u){
   s+=`<circle r="15.5" fill="${col}" stroke="${u.cmd?'#e5b93c':'#f6f0e1'}" stroke-width="${u.cmd?3:1.6}" filter="url(#sh)"/>`;
   if(u.state==='active') s+=`<circle r="18.5" fill="none" stroke="${m>.5?'#e8cf7a':m>.25?'#e39a3c':'#d23a2a'}" stroke-width="2.6" stroke-dasharray="${(2*Math.PI*18.5*m).toFixed(1)} 999" transform="rotate(-90)"/>`;
   s+=`<text y="6" text-anchor="middle" font-size="16" font-weight="900" fill="#fff">${u.short}</text>`;
+  const ut=UT[utype(u)];
+  s+=`<circle cx="-15" cy="11" r="7.5" fill="${ut.c}" stroke="#f6f0e1" stroke-width="1.3"/><text x="-15" y="14.6" text-anchor="middle" font-size="10" font-weight="900" fill="#fff">${ut.k}</text>`;
   const tw=26,tf=clamp(u.troops/u.max,0,1);
   s+=`<rect x="${-tw/2}" y="20" width="${tw}" height="4" fill="#3b3024"/><rect x="${-tw/2}" y="20" width="${(tw*tf).toFixed(1)}" height="4" fill="${tf>.5?'#7fb069':tf>.3?'#e0a83c':'#d9452f'}"/>`;
   if(u.state==='waver') s+=`<circle cx="-13" cy="-12" r="7" fill="#f6f0e1" stroke="#2a2118"/><text x="-13" y="-8.5" text-anchor="middle" font-size="10" font-weight="900" fill="#2a2118">?</text>`;
@@ -614,6 +624,8 @@ function renderTop(){
   document.getElementById('endBtn').disabled=!my;
   document.getElementById('nextBtn').disabled=!my;
 }
+function utBadge(t){const x=UT[t];return `<span style="display:inline-block;width:20px;height:20px;line-height:20px;border-radius:50%;background:${x.c};color:#fff;font-weight:900;font-size:12px;text-align:center;border:1.5px solid #f6f0e1;box-shadow:0 0 0 1px #2a2118;vertical-align:middle">${x.k}</span>`;}
+function utLegend(){return '<div class="hint" style="margin-top:8px"><b>兵種</b>（旗幟左下角）：<br>'+Object.keys(UT).map(t=>`${utBadge(t)} ${UT[t].full}`).join('　')+'</div>';}
 function unitStatus(u){
   if(u.state==='routed') return '潰走';
   if(u.state==='waver') return '觀望中';
@@ -624,14 +636,14 @@ function unitStatus(u){
 function renderInfo(){
   const b=document.getElementById('infoBox');
   if(!sel){
-    b.innerHTML=`<h3>部隊<small>${fogNow()?'霧中只見鄰近敵軍':''}</small></h3><div class="hint">點選我軍部隊，白色格子為可移動範圍，紅框為可攻擊目標。<br>先點敵軍查看預估戰果，再按「攻擊」或再點一次發動。<br>旗幟顏色：<b style="color:var(--east)">東軍</b>・<b style="color:var(--west)">西軍</b>・<b style="color:var(--waver)">觀望</b>；外環為士氣，下方條為兵力。</div>`;
+    b.innerHTML=`<h3>部隊<small>${fogNow()?'霧中只見鄰近敵軍':''}</small></h3><div class="hint">點選我軍部隊，白色格子為可移動範圍，紅框為可攻擊目標。<br>先點敵軍查看預估戰果，再按「攻擊」或再點一次發動。<br>旗幟顏色：<b style="color:var(--east)">東軍</b>・<b style="color:var(--west)">西軍</b>・<b style="color:var(--waver)">觀望</b>；外環為士氣，下方條為兵力。</div>${utLegend()}`;
     return;
   }
   const u=sel;
   const t=terr(u.c,u.r),tn=ROAD.has(key(u.c,u.r))&&t==='p'?'街道':TER[t].n;
   const mine=u.side===state.player&&u.state==='active'&&state.phase===state.player&&!busy;
   let h=`<div class="uhead">${crestOf(u,46)}<div><div class="nm">${u.name}${u.cmd?' ★':''}</div><div class="sd">${u.state==='active'?SN[u.side]:'名義西軍'}${u.defected?'（倒戈）':''}・${unitStatus(u)}</div></div></div>`;
-  h+=`<dl class="kv"><dt>兵力</dt><dd>${u.troops.toLocaleString()} / ${u.max.toLocaleString()}<div class="meter"><b style="width:${u.troops/u.max*100}%;background:#7fb069"></b></div></dd>`;
+  h+=`<dl class="kv"><dt>兵種</dt><dd>${utBadge(utype(u))} <b>${UT[utype(u)].full}</b>${u.cmd?'・本陣':''}<div style="font-size:12.5px;color:var(--muted)">${UT[utype(u)].d}</div></dd><dt>兵力</dt><dd>${u.troops.toLocaleString()} / ${u.max.toLocaleString()}<div class="meter"><b style="width:${u.troops/u.max*100}%;background:#7fb069"></b></div></dd>`;
   h+=`<dt>士氣</dt><dd>${Math.round(u.morale)}<div class="meter"><b style="width:${clamp(u.morale,0,100)}%;background:#d6a93a"></b></div></dd>`;
   h+=`<dt>攻／防</dt><dd>${u.atk.toFixed(2)} ／ ${u.def.toFixed(2)}</dd><dt>機動</dt><dd>${u.mov}${u.gun?`　鐵砲射程 ${u.gun}`:''}</dd>`;
   h+=`<dt>地形</dt><dd>${tn}（防禦×${TER[t].def}）${u.fort?'　<b>馬防柵</b>':''}${inAura(u)&&u.state==='active'?'　<b>主帥鼓舞</b>':''}</dd></dl>`;
@@ -1266,6 +1278,8 @@ function showHelp(){
   <p><b>行動</b>：每支部隊每回合可「移動」再「攻擊」一次。移動進入敵軍相鄰格會被牽制停下。有鐵砲的部隊在原地不動時可遠距射擊（霧中不行）。</p>
   <p><b>地形</b>：丘陵防禦×1.3、山地×1.5、森林×1.2、村落×1.15；河川中防禦×0.8且攻擊減弱。山地移動消耗3、丘陵與森林2，街道一律1。西軍開戰時的陣地設有馬防柵（防禦×1.25），一旦移動就失去。</p>
   <p><b>戰鬥</b>：兵力越多越強（超過五千人的部分效益遞減）。多支部隊圍攻同一目標有夾擊加成（每支+12%）。士氣歸零或兵力低於兩成即潰走，並打擊鄰近友軍士氣。霧中近戰威力減弱。</p>
+  <p><b>兵種</b>：旗幟左下角的圓形徽章代表兵種，點選部隊可在右側看到詳細說明。</p>
+  <table style="width:100%;border-collapse:collapse;font-size:14px;margin:-4px 0 12px">${Object.keys(UT).map(t=>`<tr style="border-top:1px solid #d9cdb0"><td style="padding:5px 6px;white-space:nowrap">${utBadge(t)} <b>${UT[t].full}</b></td><td style="padding:5px 6px;text-align:left">${UT[t].d}<br><small style="color:var(--muted)">代表：${UDEF.filter(d=>utype({gun:d[8],mov:d[7]})===t).map(d=>d[1]).join('、')||'—'}</small></td></tr>`).join('')}</table>
   <p><b>主帥</b>：家康周圍3格、三成周圍2格的友軍攻擊+10%、士氣恢復加倍。主帥兵力跌破四分之一即潰走、敗北。主帥以外兵力跌破巔峰的35%，全軍崩潰。</p>
   <p><b>軍令</b>：每回合3點，可用於「激勵」部隊（士氣+25），或調略／督促觀望勢力：</p>
   <ul><li><b>小早川秀秋</b>：午刻（11:30）起，去就值≤35倒戈東軍、≥70投入西軍；14:00 前必定表態。</li>
