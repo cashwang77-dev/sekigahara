@@ -230,7 +230,7 @@ button{font-family:inherit;cursor:pointer}
     <button class="big-btn" id="startBtn" disabled>請選擇陣營</button>
     <div style="margin-top:10px"><button class="link-btn" id="helpBtn0">遊戲說明</button></div>
   </div>
-  <div class="t-foot">建議開啟聲音遊玩　・　手機直向橫向皆可，地圖可左右滑動</div>
+  <div class="t-foot">建議開啟聲音遊玩　・　手機直向橫向皆可，地圖可左右滑動<br><a href="https://cashkingw.blogspot.com/search/label/%E9%97%9C%E5%8E%9F%E4%B9%8B%E6%88%B0" target="_blank" rel="noopener" style="color:var(--west);font-weight:700">關原之戰史實解析與攻略 →</a>　<a href="https://cashkingw.blogspot.com/" target="_blank" rel="noopener" style="color:var(--muted)">Cash城</a></div>
 </section>
 
 <section id="game" class="hidden">
@@ -1253,7 +1253,7 @@ async function gameOver(winner,why){
     <tr><td>造成敵軍傷亡</td><td>${state.kills.E.toLocaleString()}</td><td>${state.kills.W.toLocaleString()}</td></tr>
     <tr><td>潰走部隊</td><td>${units.filter(u=>u.side==='E'&&u.state==='routed').length}</td><td>${units.filter(u=>u.side==='W'&&u.state==='routed').length}</td></tr></table>
     ${ev}${after}
-    <p style="font-size:13.5px;color:var(--muted)">史實：小早川秀秋於正午前後倒戈，西軍在半日之內崩潰。南宮山的毛利軍在吉川廣家阻擋下終日未動。</p>
+    <p style="font-size:13.5px;color:var(--muted)">史實：小早川秀秋於正午前後倒戈，西軍在半日之內崩潰。南宮山的毛利軍在吉川廣家阻擋下終日未動。<br><a href="https://cashkingw.blogspot.com/search/label/%E9%97%9C%E5%8E%9F%E4%B9%8B%E6%88%B0" target="_blank" rel="noopener" style="color:var(--west);font-weight:700">想知道真實的關原之戰？看史實解析與攻略 →</a></p>
     <div class="seal">${winner===P?'勝':'敗'}</div>`,
     [['檢視戰場',0],['換邊再戰',2],['再戰一場',1]],'scroll');
   if(res===1) startGame(P,state.diff);
@@ -1273,7 +1273,7 @@ function showHelp(){
   <li><b>南宮山</b>：巳刻起，出陣度≥80則毛利軍從東軍背後殺出；歸零則確定不戰。</li>
   <li>戰況也會影響他們：哪一方造成的傷亡較多，觀望者就會向哪一方靠攏。</li></ul>
   <p><b>勝負</b>：擊潰敵方主帥或使其全軍崩潰。若到 16:00 仍未分出勝負，東軍需造成西軍 1.25 倍以上的傷亡才算勝利，否則視為西軍堅守成功。</p>
-  <p><b>軍師</b>：右側的軍師（東軍本多正信、西軍島左近）每回合會依戰況進言，遇到困難時可以參考。</p>`,[['了解',true]]);
+  <p><b>軍師</b>：右側的軍師（東軍本多正信、西軍島左近）每回合會依戰況進言，遇到困難時可以參考。</p><p><a href="https://cashkingw.blogspot.com/search/label/%E9%97%9C%E5%8E%9F%E4%B9%8B%E6%88%B0" target="_blank" rel="noopener" style="color:var(--west);font-weight:700">完整攻略與史實解析（Cash城）→</a></p>`,[['了解',true]]);
 }
 document.getElementById('helpBtn').onclick=showHelp;
 document.getElementById('helpBtn0').onclick=showHelp;
