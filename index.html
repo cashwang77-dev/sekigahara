@@ -285,7 +285,7 @@ button{font-family:inherit;cursor:pointer}
     <button class="big-btn" id="startBtn" disabled>請選擇陣營</button>
     <div style="margin-top:10px"><button class="link-btn" id="helpBtn0">遊戲說明</button></div>
   </div>
-  <div class="t-foot">建議開啟聲音遊玩　・　手機直向橫向皆可，地圖可左右滑動<br><a href="https://cashkingw.blogspot.com/search/label/%E9%97%9C%E5%8E%9F%E4%B9%8B%E6%88%B0" target="_blank" rel="noopener" style="color:var(--west);font-weight:700">關原之戰史實解析與攻略 →</a>　<a href="https://cashkingw.blogspot.com/" target="_blank" rel="noopener" style="color:var(--muted)">Cash城</a></div>
+  <div class="t-foot">建議開啟聲音遊玩　・　手機直向橫向皆可，地圖可左右滑動<br><a href="https://cashkingw.blogspot.com/search/label/%E9%97%9C%E5%8E%9F%E4%B9%8B%E6%88%B0" target="_blank" rel="noopener" style="color:var(--west);font-weight:700">關原之戰史實解析與攻略 →</a>　<a href="https://cashkingw.blogspot.com/" target="_blank" rel="noopener" style="color:var(--muted)">Cash城</a><div style="margin-top:12px"><a href="https://ko-fi.com/cash703856" target="_blank" rel="noopener" style="display:inline-block;padding:7px 18px;border:1.5px solid var(--gold);color:var(--ink);text-decoration:none;font-weight:700;letter-spacing:.1em;background:#fff8e6">☕ 喜歡這個遊戲？請作者喝杯咖啡</a></div></div>
 </section>
 
 <section id="game" class="hidden">
@@ -1587,7 +1587,7 @@ async function gameOver(winner,why){
     <tr><td>造成敵軍傷亡</td><td>${state.kills.E.toLocaleString()}</td><td>${state.kills.W.toLocaleString()}</td></tr>
     <tr><td>潰走部隊</td><td>${units.filter(u=>u.side==='E'&&u.state==='routed').length}</td><td>${units.filter(u=>u.side==='W'&&u.state==='routed').length}</td></tr></table>
     ${ev}${after}
-    <p style="font-size:13.5px;color:var(--muted)">史實：小早川秀秋於正午前後倒戈，西軍在半日之內崩潰。南宮山的毛利軍在吉川廣家阻擋下終日未動。<br><a href="https://cashkingw.blogspot.com/search/label/%E9%97%9C%E5%8E%9F%E4%B9%8B%E6%88%B0" target="_blank" rel="noopener" style="color:var(--west);font-weight:700">想知道真實的關原之戰？看史實解析與攻略 →</a></p>
+    <p style="font-size:13.5px;color:var(--muted)">史實：小早川秀秋於正午前後倒戈，西軍在半日之內崩潰。南宮山的毛利軍在吉川廣家阻擋下終日未動。<br><a href="https://cashkingw.blogspot.com/search/label/%E9%97%9C%E5%8E%9F%E4%B9%8B%E6%88%B0" target="_blank" rel="noopener" style="color:var(--west);font-weight:700">想知道真實的關原之戰？看史實解析與攻略 →</a><br><a href="https://ko-fi.com/cash703856" target="_blank" rel="noopener" style="color:#8a6a10;font-weight:700">☕ 喜歡這個遊戲？在 Ko-fi 請作者喝杯咖啡</a></p>
     <div class="seal">${winner===P?'勝':'敗'}</div>`,
     [['檢視戰場',0],['換邊再戰',2],['再戰一場',1]],'scroll');
   if(res===1) startGame(P,state.diff);
