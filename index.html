@@ -222,6 +222,16 @@ button{font-family:inherit;cursor:pointer}
 .unit:nth-child(4n+1) .nobori{animation-duration:2.2s;animation-delay:-1.5s}
 @keyframes flutter{0%,100%{transform:skewY(0) scaleX(1)}35%{transform:skewY(-7deg) scaleX(.9)}70%{transform:skewY(4deg) scaleX(1.04)}}
 .flow{animation:flow 3.2s linear infinite}
+.flame{animation:flame .5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes flame{from{transform:scale(1,1)}to{transform:scale(.88,1.12)}}
+.hl-plot{fill:rgba(197,154,44,.25);stroke:#c59a2c;stroke-width:2.5;stroke-dasharray:5 3}
+.stbtn{padding:4px 8px!important;font-size:13px!important}
+.stbtn.on{background:var(--ink)!important;color:var(--paper2)!important}
+.skill{margin-top:8px;padding:7px 9px;border:1.5px solid #c59a2c;background:#fff6dc;font-size:13px;line-height:1.6}
+.skill b{color:#8a5a00}
+.plotbar{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.plotbar .hdr{font-weight:700;font-size:13.5px;margin-bottom:4px}
+.plotmode{margin-top:6px;padding:6px 8px;background:#fff3c4;border:1.5px dashed #c59a2c;font-size:13px}
 @keyframes flow{to{stroke-dashoffset:-36}}
 .aside{background:#efe5cb;background-image:radial-gradient(rgba(120,90,40,.06) 1px,transparent 1px);background-size:4px 4px}
 .box{background:#fffaf0;border-color:#cdb98d;box-shadow:0 1px 0 #fff inset,0 2px 6px rgba(70,50,20,.08);position:relative}
@@ -394,7 +404,7 @@ const GEN={E:['衝啊！','拿下首級！','為了內府大人！'],W:['守住�
 
 let units=[],state=null,sel=null,R=new Map(),TG=[],pend=null,busy=false;
 const DIFF=[{n:'足輕',mul:0.85,cp:3},{n:'侍大將',mul:1.0,cp:3},{n:'天下人',mul:1.12,cp:4}];
-let chosenSide=null,chosenDiff=1;
+let chosenSide=null,chosenDiff=1,plot=null;
 const AUTO=/auto=1/.test(location.search);
 const U=id=>units.find(u=>u.id===id);
 const unitAt=(c,r)=>units.find(u=>u.c===c&&u.r===r&&u.state!=='routed');
@@ -404,13 +414,143 @@ const rand=(a,b)=>a+Math.random()*(b-a);
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const sleep=ms=>new Promise(r=>setTimeout(r,AUTO?0:ms));
-const fogNow=()=>state.turn<=4;
+const fogNow=()=>state.turn<=(state.fogEnd||4);
+/* ================= 謀略系統 v3 ================= */
+const ST={n:{n:'平陣',k:'平',d:'不加減'},atk:{n:'魚鱗',k:'魚',d:'攻勢：攻擊+15%、防禦-10%'},def:{n:'鶴翼',k:'鶴',d:'守勢：防禦+15%、被攻擊時反擊+10%、攻擊-15%'},col:{n:'長蛇',k:'蛇',d:'行軍：機動+1、防禦-20%'}};
+function matchup(a,d,ranged){
+  const A=utype(a),D=utype(d);
+  if(ranged) return (A==='gun'||A==='cannon')&&D==='cav'?1.3:1;
+  if(A==='cav'&&(D==='gun'||D==='cannon')) return 1.3;
+  if(A==='cav'&&D==='foot') return 0.85;
+  if(A==='foot'&&D==='cav') return 1.15;
+  return 1;
+}
+const bf=(u,k)=>u.bf&&u.bf.exp>=state.tick&&u.bf[k]!==undefined?u.bf[k]:null;
+function buff(u,o,phases){const keep=u.bf&&u.bf.exp>=state.tick?u.bf:{};u.bf=Object.assign({},keep,o,{exp:Math.max(keep.exp||0,state.tick+(phases||0))});}
+const adjFoes=(u,d)=>units.filter(e=>isEnemy(u,e)&&!e.hid&&hdist(u,e)<=d);
+const allies=(u,d)=>units.filter(a=>a!==u&&a.side===u.side&&a.state==='active'&&hdist(u,a)<=d);
+const burning=(c,r)=>!!state&&(state.fire[key(c,r)]||-1)>=state.tick;
+const FRONT_E=['fukushima','ii','tadayoshi','honda','kuroda','hosokawa','kato','tanaka','tsutsui','oda'],FRONT_W=['ukita','sakon','otani','konishi','hiratsuka'];
+function planAtk(u){
+  const pl=state.plan[u.side];
+  if(pl==='push'&&FRONT_E.includes(u.id)) return 1.1;
+  if(pl==='sally'&&FRONT_W.includes(u.id)) return 1.1;
+  return 1;
+}
+const PLANS={
+  E:[['push','中央突破','福島、井伊、本多、黑田等前線十隊攻擊+10%（全場）。','正面硬碰硬，趁小早川還在猶豫時打穿宇喜多與石田。'],
+     ['plot','調略重視','前6回合每回合軍令+1；小早川去就-10。','黑田長政早已在松尾山布下暗線，關鍵在讓西軍從內部瓦解。'],
+     ['steady','穩紮穩打','全軍士氣+10；家康鼓舞範圍+1格。','不急於求勝，以大軍壓陣，等西軍自己露出破綻。']],
+  W:[['hold','鶴翼死守','西軍開戰陣地的馬防柵防禦×1.4（原×1.25）。','據守高地與柵欄，讓東軍在盆地裡流血。'],
+     ['plot','松尾山工作','小早川去就+12、脇坂四將+10、南宮山出陣度+8。','開戰前再派密使登山，確保盟約不會動搖。'],
+     ['sally','主動出擊','宇喜多、島左近、大谷等前線五隊攻擊+10%，霧中進攻不受減弱。','趁霧中敵情不明，主動殺出鶴翼之陣。']]
+};
+function applyPlans(){
+  const pe=state.plan.E,pw=state.plan.W;
+  if(pe==='plot') state.L=clamp(state.L-10,0,100);
+  if(pe==='steady') units.forEach(u=>{if(u.side==='E'&&u.state==='active')u.morale=Math.min(100,u.morale+10);});
+  if(pw==='plot'){state.L=clamp(state.L+12,0,100);state.F=clamp(state.F+10,0,100);state.D=clamp(state.D+8,0,100);}
+  log(`【軍議】東軍方略「${PLANS.E.find(x=>x[0]===pe)[1]}」・西軍方略「${PLANS.W.find(x=>x[0]===pw)[1]}」`,'k');
+}
+/* ---- 武將絕技（一場一次） ---- */
+const SK={
+  honda:{n:'蜻蛉切',d:'本回合攻擊時我方零損傷，傷害+30%。',ai:u=>targets(u).some(t=>!t.ranged),run:u=>{buff(u,{atk:1.3,inv:1},0);return '蜻蛉切在此，誰敢上前！';}},
+  ii:{n:'赤備突擊',d:'本回合機動+2，攻擊傷害+40%。',ai:u=>!fogNow()&&!targets(u).length&&adjFoes(u,6).length>0,run:u=>{buff(u,{mov:2,atk:1.4},0);return '赤備，隨我衝鋒！';}},
+  shimazu:{n:'捨奸',d:'士氣回滿，本回合移動不受敵軍牽制；相鄰敵軍士氣-10。',ai:u=>u.morale<45||adjFoes(u,1).length>=2,run:u=>{buff(u,{nozoc:1},0);u.morale=100;adjFoes(u,1).forEach(e=>{e.morale-=10;if(!AUTO)fxText(e,'士氣-10','#8a6a10');});return '島津的退口——向前方突破！';}},
+  sakon:{n:'鬼左近',d:'2格內敵軍士氣-15，本回合攻擊+30%。',ai:u=>adjFoes(u,2).length>=2,run:u=>{adjFoes(u,2).forEach(e=>{e.morale-=15;if(!AUTO)fxText(e,'士氣-15','#8a6a10');});buff(u,{atk:1.3},0);return '鬼左近在此！';}},
+  otani:{n:'御輿指揮',d:'2格內友軍與自身士氣+20、防禦+20%，持續到下回合。',ai:u=>state.turn>=4&&adjFoes(u,2).length>=1,run:u=>{[u,...allies(u,2)].forEach(a=>{a.morale=Math.min(100,a.morale+20);buff(a,{df:1.2},1);});return '平塚、戶田，左右夾擊！';}},
+  ieyasu:{n:'金扇馬印',d:'4格內友軍士氣+15，鼓舞範圍擴大為5格直到下回合。',ai:u=>state.turn>=6&&allies(u,4).filter(a=>a.morale<60).length>=2,run:u=>{allies(u,4).forEach(a=>a.morale=Math.min(100,a.morale+15));buff(u,{aura:5},1);return '金扇馬印，向前！';}},
+  ishida:{n:'大一大万大吉',d:'己方全軍士氣+12，本回合軍令+1。',ai:u=>state.turn>=5&&units.filter(a=>a.side===u.side&&a.state==='active'&&a.morale<60).length>=3,run:u=>{units.forEach(a=>{if(a.side===u.side&&a.state==='active')a.morale=Math.min(100,a.morale+12);});state.cp[u.side]++;return '一人為萬人，萬人為一人！';}},
+  fukushima:{n:'先鋒之意地',d:'本回合攻擊+35%，造成的士氣打擊+50%。',ai:u=>targets(u).some(t=>!t.ranged),run:u=>{buff(u,{atk:1.35,mor:1.5},0);return '福島正則在此，誰來受死！';}},
+  kuroda:{n:'調略之才',d:'本回合軍令+2；若小早川未表態，去就-8。',ai:u=>state.turn>=3&&!state.kobaDone,run:u=>{state.cp[u.side]+=2;if(!state.kobaDone)state.L=clamp(state.L-8,0,100);return '金吾殿那邊，就交給在下吧。';}},
+  ukita:{n:'備前之槍',d:'本回合攻擊+30%，夾擊時多算一支部隊。',ai:u=>targets(u).some(t=>!t.ranged),run:u=>{buff(u,{atk:1.3,flank:1},0);return '備前兵，不許後退！';}},
+  todo:{n:'內應',d:'小早川未表態時：脇坂四將傾向東軍（-20）；之後改為2格內敵軍士氣-12。',ai:u=>state.turn>=4&&(!state.kobaDone||adjFoes(u,2).length>=2),run:u=>{if(!state.kobaDone)state.F=clamp(state.F-20,0,100);else adjFoes(u,2).forEach(e=>e.morale-=12);return '脇坂殿，該是做決定的時候了。';}},
+  koba:{n:'雪崩',d:'（表態後）本回合攻擊+50%。',ai:u=>targets(u).some(t=>!t.ranged),run:u=>{buff(u,{atk:1.5},0);return '全軍，衝下松尾山！';}},
+};
+const canSkill=u=>!!SK[u.id]&&!u.skUsed&&u.state==='active'&&u.side===state.phase&&!u.attacked&&!bf(u,'lock');
+async function useSkill(u){
+  if(!canSkill(u)) return;
+  const s=SK[u.id];u.skUsed=true;
+  const line=s.run(u);
+  log(`【絕技】${u.name}「${s.n}」！${s.d}`,'k '+u.side.toLowerCase());
+  if(!AUTO){say(u,line,true);fxText(u,'「'+s.n+'」','#b8860b');drum(.9);setTimeout(()=>drum(.7),160);if(visibleTo(u,state.player))herald(`${u.name}發動絕技「${s.n}」！`,u.side,'使番');}
+  for(const e of units) if(e.state==='active'&&e.morale<=0) await checkRout(e);
+  updPeak();
+}
+/* ---- 計略 ---- */
+const PLOT={
+  gihou:{n:'偽報',c:2,d:'散布假消息：指定一支敵軍士氣-20（約四分之一機率被識破）。'},
+  ambush:{n:'伏兵',c:2,d:'讓森林或村落中的一支我軍埋伏（消耗其本回合行動）。敵軍不知其存在；敵軍走到相鄰時發動奇襲（傷害×1.5）。'},
+  fire:{n:'火計',c:1,d:'焚燒我軍3格內的一處村落：該處部隊兵力-8%、士氣-15，兩回合內無法通行。'},
+  ninja:{n:'忍者',c:1,d:'派出忍者：得知觀望勢力的真實心意（2回合），識破敵方伏兵，霧中本回合視野全開。'}
+};
+function plotTargets(side,kind){
+  const res=[];
+  if(kind==='gihou') units.forEach(e=>{if(e.state==='active'&&e.side!==side&&visibleTo(e,side)&&!e.hid)res.push([e.c,e.r]);});
+  if(kind==='ambush') units.forEach(u=>{if(u.side===side&&u.state==='active'&&!u.hid&&!u.attacked&&!u.cmd&&'fv'.includes(terr(u.c,u.r))&&!burning(u.c,u.r)&&!adjEnemy(u.c,u.r,u))res.push([u.c,u.r]);});
+  if(kind==='fire') for(let r=0;r<H;r++)for(let c=0;c<W;c++){if(T[r][c]==='v'&&!burning(c,r)&&units.some(u=>u.side===side&&u.state==='active'&&hdist(u,{c,r})<=3))res.push([c,r]);}
+  return res;
+}
+async function doPlot(side,kind,c,r){
+  const P=PLOT[kind];if(state.cp[side]<P.c) return;
+  const me=!isAI(side),tgt=c!=null?unitAt(c,r):null;
+  state.cp[side]-=P.c;
+  if(kind==='gihou'){
+    if(!tgt) return;
+    if(Math.random()<.25){log(`${SN[side]}散布偽報，卻被${tgt.name}隊識破。`,side.toLowerCase());if(!AUTO&&me)herald('偽報被識破了……',side,'密使');}
+    else{tgt.morale-=20;log(`【偽報】「${pick(['後方已被截斷！','主將已經陣亡！','友軍已經倒戈了！'])}」——${tgt.name}隊軍心大亂（士氣-20）。`,'k '+side.toLowerCase());
+      if(!AUTO){fxText(tgt,'偽報 士氣-20','#8a6a10');say(tgt,pick(['什麼？真的嗎？','不、不要慌！','後方……被截斷了？']),true);}
+      await checkRout(tgt);}
+  }else if(kind==='fire'){
+    state.fire[key(c,r)]=state.tick+3;
+    log(`【火計】${SN[side]}在${LABELS.find(l=>Math.round(l[1])===c&&Math.floor(l[2])===r)?.[0]||'村落'}放火，濃煙沖天！`,'k '+side.toLowerCase());
+    if(tgt){const d=Math.round(tgt.troops*.08);tgt.troops-=d;tgt.morale-=15;state.kills[side]+=tgt.side!==side?d:0;log(`${tgt.name}隊陷入火海，折損${d.toLocaleString()}人。`,tgt.side.toLowerCase());if(!AUTO)fxText(tgt,'-'+d.toLocaleString(),'#b3241a');await checkRout(tgt);}
+    if(!AUTO){roar(.4,.8);renderBurn();}
+  }else if(kind==='ambush'){
+    if(!tgt) return;
+    tgt.hid=true;tgt.moved=true;tgt.attacked=true;
+    if(me){log(`【伏兵】${tgt.name}隊偃旗息鼓，埋伏於${TER[terr(c,r)].n}之中。`,'k '+side.toLowerCase());if(!AUTO)herald(`${tgt.name}隊已就伏擊位置。`,side,'物見');}
+  }else if(kind==='ninja'){
+    state.scout[side]=state.turn+1;state.eyes[side]=state.tick;
+    const found=units.filter(u=>u.hid&&u.side!==side);found.forEach(u=>u.hid=false);
+    if(me){log(`【忍者】伊賀忍者潛入敵陣回報${found.length?`，識破${found.map(u=>u.name).join('、')}的伏兵！`:'。'}`,'k '+side.toLowerCase());if(!AUTO)herald(found.length?`忍者回報：${found[0].name}隊埋伏在${TER[terr(found[0].c,found[0].r)].n}中！`:'忍者回報：松尾山與南宮山的真實動向已查明。',side,'忍者');}
+    else if(found.length) log(`敵方忍者識破了我軍${found.map(u=>u.name).join('、')}的伏兵！`,'k '+state.player.toLowerCase());
+  }
+  updPeak();
+}
+async function ambushCheck(mover){
+  if(state.over||mover.state!=='active') return;
+  const h=units.find(u=>u.hid&&u.state==='active'&&u.side!==mover.side&&hdist(u,mover)===1);
+  if(!h) return;
+  log(`【奇襲】${h.name}隊的伏兵自${TER[terr(h.c,h.r)].n}中殺出！`,'k '+h.side.toLowerCase());
+  if(!AUTO){herald(`伏兵！${h.name}隊自${TER[terr(h.c,h.r)].n}中殺出！`,h.side,'物見');roar(.9,1.2);shake();await sleep(500);}
+  mover.morale-=10;
+  await attack(h,mover,false,true);
+}
+function seen(k){
+  if(state.over||(state.scout[state.player]||0)>=state.turn) return state[k];
+  return clamp(Math.round(state[k]+(hsh(state.turn*7+{L:1,F:2,D:3}[k],3)-.5)*24),0,100);
+}
+/* ---- 歷史事件（每場隨機抽3） ---- */
+const EVENTS=[
+  {t:[2,3],c:()=>state.fogEnd===4,run:()=>{state.fogEnd=state.turn;return ['山風驟起','濃霧提早散去','<p>伊吹山吹下的山風捲走了濃霧，比預期更早，整個盆地已一覽無遺。</p><div class="quote">本回合結束後霧散，鐵砲可提早射擊。</div>'];}},
+  {t:[3,4],c:()=>state.fogEnd===4,run:()=>{state.fogEnd=5;return ['霧遲遲不散','巳刻仍是白茫茫一片','<p>濃霧比預期更持久。鐵砲隊只能焦急地等待。</p><div class="quote">霧將延長到第5回合。</div>'];}},
+  {t:[3,6],c:()=>!state.nanguDone,run:()=>{state.D=clamp(state.D-15,0,100);return ['吉川的密使','南宮山 出陣度 -15','<p>吉川廣家的家臣悄悄來到黑田長政陣中：「毛利家絕不出兵，請內府放心。」</p>',U('kikkawa')];}},
+  {t:[5,8],c:()=>!state.nanguDone,run:()=>{state.D=clamp(state.D+15,0,100);return ['毛利秀元的焦躁','南宮山 出陣度 +15','<p>聽著山下震天的殺聲，年輕的毛利秀元再也坐不住了：「吉川，為何還不出兵！」</p>',U('mori')];}},
+  {t:[6,10],c:()=>U('otani').state==='active',run:()=>{const o=U('otani');o.morale-=20;buff(o,{atk:.85},4);return ['大谷病情惡化','大谷吉繼 士氣-20、攻擊-15%（兩回合）','<p>大谷吉繼的病已經讓他看不見了。他坐在轎中，聽著戰況指揮，咳嗽卻越來越重。</p>',o];}},
+  {t:[1,3],c:()=>U('fukushima').state==='active',run:()=>{buff(U('fukushima'),{atk:1.15},3);U('ii').morale=Math.min(100,U('ii').morale+10);return ['爭奪先鋒','福島正則 攻擊+15%（兩回合）、井伊直政 士氣+10','<p>被井伊直政搶走先鋒的福島正則勃然大怒：「先鋒是我福島的！」全隊怒吼著衝向宇喜多。</p>',U('fukushima')];}},
+  {t:[8,11],c:()=>!state.kobaDone,run:()=>{state.L=Math.round(state.L+(52-state.L)*.5);return ['金吾的猶豫','小早川去就向中間靠攏','<p>松尾山上，十九歲的小早川秀秋來回踱步。東西兩軍的使者都在帳外等候，他卻遲遲無法下令。</p>',U('koba')];}},
+  {t:[6,10],c:()=>U('shimazu').state==='active'&&U('shimazu').side==='W',run:()=>{buff(U('shimazu'),{lock:1},4);return ['島津拒絕出兵','島津義弘 兩回合按兵不動','<p>石田三成的使者騎馬到島津陣前催促出擊，島津豐久怒斥：「戰場上下馬傳令才是禮數！各自為戰，休要多言！」</p><div class="quote">「靠近者，不論敵我，一律射殺。」</div>',U('shimazu')];}},
+  {t:[7,11],c:()=>U('ieyasu').state==='active'&&!state.kobaDone,run:()=>{state.cpb.E=(state.cpb.E||0)+1;return ['家康咬指甲','東軍本回合軍令+1','<p>小早川遲遲不動，家康焦躁地咬著指甲：「那個小毛頭……再派使者！」</p>',U('ieyasu')];}},
+];
+
 
 function newGame(side,diff){
   units=UDEF.map(([id,name,short,sd,troops,atk,def,mov,gun,c,r,x])=>({id,name,short,side:sd,origSide:sd,troops,max:troops,atk,def,mov,gun,c,r,home:{c,r},
-    morale:x.group?100:90,state:x.group?'waver':'active',fort:sd==='W'&&!x.group,group:x.group||null,cmd:!!x.cmd,role:x.role||'adv',trait:x.trait||'',moved:false,attacked:false,said:0}));
+    morale:x.group?100:90,state:x.group?'waver':'active',fort:sd==='W'&&!x.group,group:x.group||null,cmd:!!x.cmd,role:x.role||'adv',trait:x.trait||'',moved:false,attacked:false,said:0,st:'n',bf:null,skUsed:false,hid:false}));
   state={player:side,diff,turn:1,phase:'E',cp:{E:3,W:3},L:50,F:45,D:20,kobaDone:false,kobaRes:null,nanguDone:false,nanguRes:null,
-    teppo:false,kills:{E:0,W:0},peak:{E:0,W:0},over:false,log:[],events:[]};
+    teppo:false,kills:{E:0,W:0},peak:{E:0,W:0},over:false,log:[],events:[],
+    tick:0,fogEnd:4,fire:{},scout:{},eyes:{},cpb:{},plan:{E:'steady',W:'hold'},evq:[...EVENTS].sort(()=>Math.random()-.5).slice(0,3)};
   updPeak();
 }
 const isAI=s=>AUTO||s!==state.player;
@@ -419,22 +559,26 @@ function updPeak(){['E','W'].forEach(s=>state.peak[s]=Math.max(state.peak[s],sid
 
 /* ================= 判定 ================= */
 const isEnemy=(a,b)=>a.state==='active'&&b.state==='active'&&a.side!==b.side;
-function adjEnemy(c,r,u){return nbrs(c,r).some(([x,y])=>{const o=unitAt(x,y);return o&&o!==u&&o.state==='active'&&o.side!==u.side;});}
+function adjEnemy(c,r,u){return nbrs(c,r).some(([x,y])=>{const o=unitAt(x,y);return o&&o!==u&&o.state==='active'&&o.side!==u.side&&!o.hid;});}
 function visibleTo(e,side){
+  if(e.hid&&e.side!==side&&e.state==='active') return false;
   if(!fogNow()||e.state!=='active'||e.side===side) return true;
+  if((state.eyes[side]??-9)>=state.tick) return true;
   return units.some(o=>o.state==='active'&&o.side===side&&hdist(o,e)<=3);
 }
 function reach(u){
-  const best=new Map(),res=new Map();best.set(key(u.c,u.r),u.mov);
-  const q=[[u.c,u.r,u.mov,true]];
+  const best=new Map(),res=new Map();if(bf(u,'lock'))return res;
+  const mv=u.mov+(u.st==='col'?1:0)+(bf(u,'mov')||0),nz=!!bf(u,'nozoc');best.set(key(u.c,u.r),mv);
+  const q=[[u.c,u.r,mv,true]];
   while(q.length){
     q.sort((a,b)=>b[2]-a[2]);const [c,r,mp,first]=q.shift();
     for(const [nc,nr] of nbrs(c,r)){
       const o=unitAt(nc,nr);
       if(o&&!(o.side===u.side&&o.state==='active')) continue;
+      if(burning(nc,nr)) continue;
       let rem=mp-moveCost(nc,nr);
       if(rem<0){if(first) rem=0; else continue;}
-      if(adjEnemy(nc,nr,u)) rem=0;
+      if(adjEnemy(nc,nr,u)&&!nz) rem=0;
       const k=key(nc,nr);
       if(best.has(k)&&best.get(k)>=rem) continue;
       best.set(k,rem);
@@ -445,33 +589,36 @@ function reach(u){
   return res;
 }
 function targets(u){
-  if(u.attacked||u.state!=='active') return [];
+  if(u.attacked||u.state!=='active'||bf(u,'lock')) return [];
   const res=[];
   units.forEach(e=>{
-    if(!isEnemy(u,e)) return;
+    if(!isEnemy(u,e)||e.hid) return;
     const d=hdist(u,e);
     if(d===1) res.push({e,ranged:false});
     else if(u.gun&&!u.moved&&!fogNow()&&d<=u.gun&&visibleTo(e,u.side)) res.push({e,ranged:true});
   });
   return res;
 }
-function inAura(u){return units.some(o=>o.cmd&&o.side===u.side&&o.state==='active'&&hdist(o,u)<=(o.id==='ieyasu'?3:2));}
+const auraR=o=>bf(o,'aura')||((o.id==='ieyasu'?3:2)+(state.plan[o.side]==='steady'?1:0));
+function inAura(u){return units.some(o=>o.cmd&&o.side===u.side&&o.state==='active'&&hdist(o,u)<=auraR(o));}
 const eff=t=>Math.min(t,5000)+0.35*Math.max(0,t-5000);
 function calc(att,def,ranged,rnd){
   const ta=terr(att.c,att.r),td=terr(def.c,def.r);
   let flank=0;
   if(!ranged) nbrs(def.c,def.r).forEach(([x,y])=>{const o=unitAt(x,y);if(o&&o!==att&&o.side===att.side&&o.state==='active')flank++;});
-  flank=Math.min(flank,3);
+  flank=Math.min(flank+(bf(att,'flank')||0),4);
   const r1=rnd?rand(.85,1.15):1,r2=rnd?rand(.85,1.15):1;
   const mA=isAI(att.side)&&!AUTO?DIFF[state.diff].mul:1, mD=isAI(def.side)&&!AUTO?DIFF[state.diff].mul:1;
-  let p=eff(att.troops)*att.atk*(0.5+att.morale/200)*(inAura(att)?1.1:1)*(1+0.12*flank);
+  const mu=matchup(att,def,ranged),stA={atk:1.15,def:.85}[att.st]||1,stD={def:1.15,atk:.9,col:.8}[def.st]||1;
+  let p=eff(att.troops)*att.atk*(0.5+att.morale/200)*(inAura(att)?1.1:1)*(1+0.12*flank)*mu*stA*(bf(att,'atk')||1)*planAtk(att)*(att.hid?1.5:1);
   if(ta==='r'&&!ROAD.has(key(att.c,att.r))) p*=0.85;
-  const dv=def.def*(ROAD.has(key(def.c,def.r))&&td==='p'?1:TER[td].def)*(def.fort?1.25:1);
-  const fogm=fogNow()?0.75:1;
+  const dv=def.def*(ROAD.has(key(def.c,def.r))&&td==='p'?1:TER[td].def)*(def.fort?(state.plan.W==='hold'?1.4:1.25):1)*stD*(bf(def,'df')||1);
+  const fogm=fogNow()&&!(state.plan.W==='sally'&&att.side==='W')?0.75:1;
   let dd=p*(ranged?0.05:0.09)/dv*mA*r1*fogm, da=0;
-  if(!ranged) da=eff(def.troops)*def.def*(0.5+def.morale/200)*TER[td].def*0.045/att.def*mD*r2*fogm;
+  if(!ranged) da=eff(def.troops)*def.def*(0.5+def.morale/200)*TER[td].def*0.045/att.def*mD*r2*fogm*matchup(def,att,false)*(def.st==='def'?1.1:1)*(att.hid?.5:1);
   else if(def.gun&&def.gun>=hdist(att,def)) da=eff(def.troops)*0.022/att.def*mD*r2;
-  return {dd:Math.round(Math.min(dd,def.troops)),da:Math.round(Math.min(da,att.troops)),flank};
+  if(bf(att,'inv')) da=0;
+  return {dd:Math.round(Math.min(dd,def.troops)),da:Math.round(Math.min(da,att.troops)),flank,mu};
 }
 function moraleLoss(dmg,troops,base){return dmg/Math.max(troops,1)*100*base;}
 
@@ -543,7 +690,7 @@ function buildBoard(){
   s+=`<rect width="${VW}" height="${VH}" fill="url(#pap2)" opacity=".55"/><rect width="${VW}" height="${VH}" fill="url(#pap1)"/>`;
   s+=compass(VW-34,34)+`</g><rect id="tint" x="0" y="0" width="${VW}" height="${VH}" fill="#c9d6e3" opacity="0"/><g id="labels">`;
   LABELS.forEach(([t,c,r,big])=>{const [x,y]=px(c,Math.floor(r));s+=`<text class="lbl${big?' big':' road'}" x="${x}" y="${y+(big?-14:16)}" text-anchor="middle">${t}</text>`;});
-  s+=`</g><rect width="${VW}" height="${VH}" fill="url(#vig)" pointer-events="none"/><g id="hl"></g><g id="units"></g><g id="fog">`;
+  s+=`</g><rect width="${VW}" height="${VH}" fill="url(#vig)" pointer-events="none"/><g id="burn" pointer-events="none"></g><g id="hl"></g><g id="units"></g><g id="fog">`;
   const fogs=[[120,120,200,90],[380,90,230,100],[650,140,240,95],[860,110,200,90],[200,330,260,110],[520,300,280,120],[800,330,240,110],[110,520,220,100],[420,520,260,110],[720,540,260,100],[930,470,180,90]];
   fogs.forEach(([x,y,rx,ry])=>{s+=`<ellipse class="fogc" cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="url(#fogg)"/>`;});
   s+='</g><g id="fx"></g>';
@@ -569,7 +716,7 @@ function glyph(t,x,y,c,r){
 function atmosphere(){
   if(AUTO) return;
   const t=state.turn,f=document.getElementById('fog'),ti=document.getElementById('tint');
-  const fo=[0,.72,.58,.42,.26][t]||0;
+  const fo=fogNow()?Math.max(.2,.72-(t-1)*.15):0;
   f.style.opacity=state.over?0:fo;
   let col='#fff',op=0;
   if(t<=2){col='#b9c8d8';op=.22;}else if(t<=4){col='#d5dde3';op=.12;}else if(t<=10){op=0;}else if(t<=13){col='#f0c26a';op=.08;}else{col='#e0793e';op=.17;}
@@ -582,10 +729,10 @@ function atmosphere(){
 }
 /* ================= 兵種 ================= */
 const UT={
-  cannon:{n:'大筒',full:'大筒陣地',k:'筒',c:'#7a2e1d',d:'射程3的大砲，原地不動時可遠距砲擊，攻防穩固但移動慢。'},
-  gun:{n:'鐵砲',full:'鐵砲隊',k:'砲',c:'#b5651d',d:'射程2，原地不動時可先開槍再接敵；霧中無法射擊，是霧散後的主力。'},
-  cav:{n:'騎馬',full:'騎馬精銳',k:'騎',c:'#2f6b3a',d:'機動4，衝得快、攻擊高，適合繞側夾擊與追擊；兵力通常不多，別孤軍深入。'},
-  foot:{n:'足輕',full:'足輕槍隊',k:'足',c:'#5b5348',d:'機動3的一般部隊，靠兵力與地形推進；搭配夾擊（每支+12%）才有威力。'}
+  cannon:{n:'大筒',full:'大筒陣地',k:'筒',c:'#7a2e1d',d:'射程3的大砲，原地不動時可遠距砲擊，射擊騎馬隊傷害+30%；怕被騎馬衝入。'},
+  gun:{n:'鐵砲',full:'鐵砲隊',k:'砲',c:'#b5651d',d:'射程2，原地不動時可先開槍再接敵；霧中無法射擊。射擊騎馬隊傷害+30%，但被騎馬衝入時傷害+30%。'},
+  cav:{n:'騎馬',full:'騎馬精銳',k:'騎',c:'#2f6b3a',d:'機動4、攻擊高。衝擊鐵砲隊、大筒傷害+30%；但碰上足輕槍陣傷害-15%，反被槍衾刺傷。'},
+  foot:{n:'足輕',full:'足輕槍隊',k:'足',c:'#5b5348',d:'機動3的一般部隊，靠兵力與地形推進。槍衾迎擊騎馬隊時傷害+15%；搭配夾擊（每支+12%）才有威力。'}
 };
 function utype(u){return u.gun>=3?'cannon':u.gun>=2?'gun':u.mov>=4?'cav':'foot';}
 function tokenSVG(u){
@@ -599,12 +746,22 @@ function tokenSVG(u){
   s+=`<text class="utxt" y="6" text-anchor="middle" font-size="17" font-weight="700" fill="#fff" stroke="rgba(0,0,0,.25)" stroke-width=".6" paint-order="stroke">${u.short}</text>`;
   const ut=UT[utype(u)];
   s+=`<circle cx="-15" cy="11" r="7.5" fill="${ut.c}" stroke="#f6f0e1" stroke-width="1.3"/><text x="-15" y="14.6" text-anchor="middle" font-size="10" font-weight="900" fill="#fff">${ut.k}</text>`;
+  if(u.st&&u.st!=='n'&&u.state==='active') s+=`<rect x="8.5" y="4.5" width="13" height="13" rx="2" fill="#f6f0e1" stroke="#2a2118" stroke-width=".8"/><text x="15" y="14.6" text-anchor="middle" font-size="9.5" font-weight="900" fill="${u.st==='atk'?'#9a2b25':u.st==='def'?'#2d4777':'#3d6b3a'}">${ST[u.st].k}</text>`;
+  if(u.hid) s+=`<circle r="21" fill="none" stroke="#3d6b3a" stroke-width="2" stroke-dasharray="3 3"/><text x="-14" y="-9" font-size="10" font-weight="900" fill="#3d6b3a" paint-order="stroke" stroke="#f6f0e1" stroke-width="2.5">伏</text>`;
+  if(bf(u,'lock')) s+=`<text x="-14" y="-9" font-size="10" font-weight="900" fill="#9a2b25" paint-order="stroke" stroke="#f6f0e1" stroke-width="2.5">止</text>`;
   const tw=26,tf=clamp(u.troops/u.max,0,1);
   s+=`<rect x="${-tw/2}" y="20" width="${tw}" height="4" fill="#3b3024"/><rect x="${-tw/2}" y="20" width="${(tw*tf).toFixed(1)}" height="4" fill="${tf>.5?'#7fb069':tf>.3?'#e0a83c':'#d9452f'}"/>`;
   if(u.state==='waver') s+=`<circle cx="-13" cy="-12" r="7" fill="#f6f0e1" stroke="#2a2118"/><text x="-13" y="-8.5" text-anchor="middle" font-size="10" font-weight="900" fill="#2a2118">?</text>`;
   if(u.state==='out') s+=`<text x="-14" y="-9" font-size="10" font-weight="900" fill="#2a2118">不戰</text>`;
   if(u.defected) s+=`<circle cx="-13" cy="-12" r="6.5" fill="#e5b93c" stroke="#2a2118" stroke-width=".8"/><text x="-13" y="-8.8" text-anchor="middle" font-size="8.5" font-weight="900" fill="#2a2118">寢</text>`;
   return s;
+}
+function renderBurn(){
+  if(AUTO) return;
+  let s='';
+  for(const k in state.fire){if(state.fire[k]<state.tick)continue;const [c,r]=k.split(',').map(Number),[x,y]=px(c,r);
+    s+=`<polygon points="${hexPts(x,y,S-2)}" fill="rgba(190,60,20,.35)" stroke="#b3241a" stroke-width="1.5"/><g transform="translate(${x},${y})"><g class="flame"><path d="M0 -16 C7 -8 9 -2 6 5 C4 10 -4 10 -6 5 C-9 -2 -5 -7 -2 -11 C-2 -6 1 -4 0 -16Z" fill="#f08a24"/><path d="M0 -6 C4 -1 4 3 2 6 C0 8 -3 7 -3 4 C-4 1 -2 -2 0 -6Z" fill="#ffd76a"/></g></g>`;}
+  document.getElementById('burn').innerHTML=s;
 }
 function renderUnits(){
   if(AUTO) return;
@@ -617,7 +774,7 @@ function renderUnits(){
     const [x,y]=px(u.c,u.r);
     g.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`;
     const done=u.state==='active'&&u.side===state.phase&&!isAI(u.side)&&u.moved&&u.attacked;
-    g.style.opacity=u.state==='out'?.6:done?.55:1;
+    g.style.opacity=u.state==='out'?.6:u.hid?.6:done?.55:1;
     g.firstChild.innerHTML=tokenSVG(u);
   });
 }
@@ -629,6 +786,7 @@ function renderHL(){
     TG.forEach(({e})=>{const [x,y]=px(e.c,e.r);s+=`<polygon class="${pend===e?'hl-pend':'hl-atk'}" points="${hexPts(x,y,S-2)}"/>`;});
     const [x,y]=px(sel.c,sel.r);s+=`<polygon class="hl-sel" points="${hexPts(x,y,S-2)}"/>`;
   }
+  if(plot) plotTargets(state.player,plot).forEach(([c,r])=>{const [x,y]=px(c,r);s+=`<polygon class="hl-plot" points="${hexPts(x,y,S-3)}"/>`;});
   document.getElementById('hl').innerHTML=s;
 }
 /* ---- 特效 ---- */
@@ -731,12 +889,15 @@ function renderInfo(){
   h+=`<dl class="kv"><dt>兵種</dt><dd>${utBadge(utype(u))} <b>${UT[utype(u)].full}</b>${u.cmd?'・本陣':''}<div style="font-size:12.5px;color:var(--muted)">${UT[utype(u)].d}</div></dd><dt>兵力</dt><dd>${u.troops.toLocaleString()} / ${u.max.toLocaleString()}<div class="meter"><b style="width:${u.troops/u.max*100}%;background:#7fb069"></b></div></dd>`;
   h+=`<dt>士氣</dt><dd>${Math.round(u.morale)}<div class="meter"><b style="width:${clamp(u.morale,0,100)}%;background:#d6a93a"></b></div></dd>`;
   h+=`<dt>攻／防</dt><dd>${u.atk.toFixed(2)} ／ ${u.def.toFixed(2)}</dd><dt>機動</dt><dd>${u.mov}${u.gun?`　鐵砲射程 ${u.gun}`:''}</dd>`;
-  h+=`<dt>地形</dt><dd>${tn}（防禦×${TER[t].def}）${u.fort?'　<b>馬防柵</b>':''}${inAura(u)&&u.state==='active'?'　<b>主帥鼓舞</b>':''}</dd></dl>`;
+  h+=`<dt>陣形</dt><dd>${ST[u.st||'n'].n}${u.st&&u.st!=='n'?`<span style="color:var(--muted);font-size:12.5px">（${ST[u.st].d}）</span>`:''}${u.hid?'　<b style="color:var(--ok)">埋伏中</b>':''}${bf(u,'lock')?'　<b style="color:var(--bad)">按兵不動</b>':''}</dd>`;
+  h+=`<dt>地形</dt><dd>${tn}（防禦×${TER[t].def}）${u.fort?`　<b>馬防柵</b>`:''}${burning(u.c,u.r)?'　<b style="color:var(--bad)">火海</b>':''}${inAura(u)&&u.state==='active'?'　<b>主帥鼓舞</b>':''}</dd></dl>`;
   if(u.trait) h+=`<div class="trait">${u.trait}</div>`;
+  if(SK[u.id]) h+=`<div class="skill"><b>絕技「${SK[u.id].n}」</b>${u.skUsed?'（已使用）':''}<br>${SK[u.id].d}${mine&&canSkill(u)?'<div class="btnrow"><button class="btn red" id="skBtn">發動絕技</button></div>':''}</div>`;
+  if(mine) h+=`<div class="btnrow" style="align-items:center"><span style="font-size:12.5px;color:var(--muted)">陣形${u.moved?'（移動後不可變更）':''}</span>${Object.keys(ST).map(k=>`<button class="btn stbtn${(u.st||'n')===k?' on':''}" data-st="${k}" title="${ST[k].d}" ${u.moved||u.attacked?'disabled':''}>${ST[k].n}</button>`).join('')}</div>`;
   if(pend&&mine){
     const tg=TG.find(x=>x.e===pend);
     if(tg){const p=calc(u,pend,tg.ranged,false);
-      h+=`<div class="preview"><b>${tg.ranged?'鐵砲射擊':'突擊'} → ${pend.name}</b>（兵${pend.troops.toLocaleString()}・士氣${Math.round(pend.morale)}）<br>預估造成約 <b style="color:var(--bad)">${p.dd.toLocaleString()}</b> 傷亡，我方承受約 <b>${p.da.toLocaleString()}</b>${p.flank?`<br>夾擊加成 +${p.flank*12}%`:''}<div class="btnrow"><button class="btn red" id="atkBtn">攻擊！</button><button class="btn" id="cancelAtk">取消</button></div></div>`;}
+      h+=`<div class="preview"><b>${tg.ranged?'鐵砲射擊':'突擊'} → ${pend.name}</b>（兵${pend.troops.toLocaleString()}・士氣${Math.round(pend.morale)}・${ST[pend.st||'n'].n}）<br>預估造成約 <b style="color:var(--bad)">${p.dd.toLocaleString()}</b> 傷亡，我方承受約 <b>${p.da.toLocaleString()}</b>${p.flank?`<br>夾擊加成 +${p.flank*12}%`:''}${p.mu>1?`<br><b style="color:var(--ok)">兵種相剋 ×${p.mu}</b>`:p.mu<1?`<br><b style="color:var(--bad)">兵種不利 ×${p.mu}</b>`:''}<div class="btnrow"><button class="btn red" id="atkBtn">攻擊！</button><button class="btn" id="cancelAtk">取消</button></div></div>`;}
   }
   if(mine) h+=`<div class="btnrow"><button class="btn" id="rallyBtn" ${state.cp[state.player]<1||u.morale>=100?'disabled':''}>激勵（軍令1）士氣+25</button><button class="btn" id="desel">取消選取</button></div>`;
   else h+=`<div class="btnrow"><button class="btn" id="desel">關閉</button></div>`;
@@ -746,6 +907,8 @@ function renderInfo(){
   if(q('atkBtn')) q('atkBtn').onclick=()=>playerAttack(pend);
   if(q('cancelAtk')) q('cancelAtk').onclick=()=>{pend=null;renderAll();};
   if(q('rallyBtn')) q('rallyBtn').onclick=()=>{rally(u,state.player);renderAll();};
+  if(q('skBtn')) q('skBtn').onclick=async()=>{if(busy)return;busy=true;await useSkill(u);busy=false;if(state.over)return;if(u.state==='active')selectUnit(u);else{sel=null;renderAll();}};
+  b.querySelectorAll('[data-st]').forEach(x=>x.onclick=()=>{if(u.moved||u.attacked)return;u.st=x.dataset.st;selectUnit(u);});
 }
 function gauge(title,val,lt,rt,ths,stateTxt){
   return `<div class="gauge"><div class="lbl"><b>${title}</b><span>${Math.round(val)}</span></div><div class="gtrack">${ths.map(t=>`<div class="th" style="left:${t}%"></div>`).join('')}<div class="mk" style="left:${val}%"></div></div><div class="gends"><span>${lt}</span><span>${rt}</span></div><div class="gstate">${stateTxt}</div></div>`;
@@ -756,10 +919,11 @@ function renderStrat(){
   const kTxt=state.kobaDone?(state.kobaRes==='E'?'<b style="color:var(--east)">已倒戈東軍</b>':'<b style="color:var(--west)">已投入西軍</b>'):`觀望中・${state.turn<8?'預計午刻（11:30）後決斷':'隨時可能決斷'}（≤35倒戈／≥70助西）`;
   const fTxt=state.kobaDone?'已隨局勢表態':'小早川倒戈時，此值低於60則四將一併倒戈';
   const nTxt=state.nanguDone?(state.nanguRes==='W'?'<b style="color:var(--west)">毛利軍已殺下南宮山！</b>':'<b style="color:var(--east)">吉川堵路，毛利軍按兵不動</b>'):`觀望中・巳刻後 ≥80 出陣／≤0 確定不戰`;
-  let h=`<h3>軍令<small>剩餘 ${cp} 點</small></h3>`;
-  h+=gauge('小早川秀秋 去就',state.L,'← 東軍','西軍 →',[35,70],kTxt);
-  h+=gauge('脇坂等四將',state.F,'← 東軍','西軍 →',[60],fTxt);
-  h+=gauge('南宮山 出陣度',state.D,'按兵不動','出陣 →',[80],nTxt);
+  const sc=(state.scout[P]||0)>=state.turn;
+  let h=`<h3>軍令<small>剩餘 ${cp} 點</small></h3><div class="hint">${sc?`<b style="color:var(--ok)">忍者回報：以下為真實數值（至第${state.scout[P]}回合）</b>`:'以下量表為<b>傳聞</b>，誤差約±12。派「忍者」可得知實情。'}</div>`;
+  h+=gauge('小早川秀秋 去就'+(sc?'':'（傳聞）'),seen('L'),'← 東軍','西軍 →',[35,70],kTxt);
+  h+=gauge('脇坂等四將'+(sc?'':'（傳聞）'),seen('F'),'← 東軍','西軍 →',[60],fTxt);
+  h+=gauge('南宮山 出陣度'+(sc?'':'（傳聞）'),seen('D'),'按兵不動','出陣 →',[80],nTxt);
   h+='<div class="btnrow">';
   const dis=c=>(!my||cp<c)?'disabled':'';
   if(P==='E'){
@@ -774,13 +938,21 @@ function renderStrat(){
   }
   h+='</div>';
   if(P==='E') h+=`<div class="hint" style="margin-top:6px">問鐵砲：巳刻後可用。向松尾山開火逼小早川立刻表態——去就值低於65即倒戈，否則他將憤而助西軍。</div>`;
+  h+=`<div class="plotbar"><div class="hdr">計略</div><div class="btnrow" style="margin-top:0">${Object.keys(PLOT).map(k=>`<button class="btn${plot===k?' red':''}" data-p="${k}" title="${PLOT[k].d}" ${dis(PLOT[k].c)}>${PLOT[k].n}（${PLOT[k].c}）</button>`).join('')}</div>`;
+  h+=plot?`<div class="plotmode"><b>${PLOT[plot].n}</b>：${PLOT[plot].d}<br>請點選地圖上金色虛線的格子。<button class="btn" id="plotCancel" style="margin-left:6px;padding:2px 8px">取消</button></div>`:`<div class="hint" style="margin-top:4px">偽報：打擊敵軍士氣・伏兵：森林村落埋伏奇襲・火計：焚燒村落・忍者：探明實情與伏兵</div>`;
+  h+='</div>';
   b.innerHTML=h;
   b.querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>stratAct(P,x.dataset.a));
+  b.querySelectorAll('[data-p]').forEach(x=>x.onclick=async()=>{const k=x.dataset.p;if(busy)return;
+    if(k==='ninja'){busy=true;await doPlot(P,'ninja');busy=false;plot=null;renderAll();renderAdvisor();return;}
+    if(!plotTargets(P,k).length){herald(k==='ambush'?'沒有可埋伏的部隊（需位於森林或村落、未行動、未與敵接觸）。':k==='fire'?'我軍3格內沒有可焚燒的村落。':'沒有可施計的目標。',P,'軍師');return;}
+    plot=plot===k?null:k;sel=null;pend=null;R=new Map();TG=[];renderAll();});
+  if(document.getElementById('plotCancel')) document.getElementById('plotCancel').onclick=()=>{plot=null;renderAll();};
 }
 function renderLog(){
   document.getElementById('log').innerHTML=state.log.slice(-60).reverse().map(l=>`<div><span class="tm">${l.t}</span><span class="${l.c||''}">${l.m}</span></div>`).join('');
 }
-function renderAll(){if(AUTO)return;renderHL();renderUnits();renderTop();renderInfo();renderStrat();renderLog();atmosphere();}
+function renderAll(){if(AUTO)return;renderBurn();renderHL();renderUnits();renderTop();renderInfo();renderStrat();renderLog();atmosphere();}
 function log(m,c){state.log.push({t:timeStr(Math.min(state.turn,16)),m,c});if(!AUTO)renderLog();}
 
 /* ---- 軍師進言 ---- */
@@ -801,22 +973,27 @@ function adviceLines(){
   if(weak) L.push(`${weak.name}隊士氣低落（${Math.round(weak.morale)}），再不激勵恐怕就要崩潰了。`);
   if(!state.kobaDone){
     if(E){
-      if(state.L>=60) L.push('金吾殿仍傾向西軍。再派使者陳說利害吧，否則到了午刻恐怕不妙。');
-      else if(state.L<=35) L.push('小早川已經動搖了。午刻一到，他必有動靜。');
+      if(seen('L')>=60) L.push('金吾殿仍傾向西軍。再派使者陳說利害吧，否則到了午刻恐怕不妙。');
+      else if(seen('L')<=35) L.push('小早川已經動搖了。午刻一到，他必有動靜。');
       else if(state.turn>=5&&!state.teppo) L.push('松尾山仍在觀望……要不要用鐵砲「問問」金吾殿的心意？只是若他心向西軍，恐怕弄巧成拙。');
     }else{
-      if(state.L<=45) L.push('金吾中納言似乎與東軍暗通款曲！請立即派使者督促，許以重賞。');
-      else if(state.L>=65) L.push('金吾殿心向我方，只待時機成熟便會殺下松尾山。');
+      if(seen('L')<=45) L.push('金吾中納言似乎與東軍暗通款曲！請立即派使者督促，許以重賞。');
+      else if(seen('L')>=65) L.push('金吾殿心向我方，只待時機成熟便會殺下松尾山。');
     }
   }
   if(!state.nanguDone){
-    if(E&&state.D>=45) L.push('南宮山有異動！得趕快與吉川聯絡，否則我軍背後危險。');
-    if(!E&&state.turn>=2) L.push(state.D>=60?'南宮山的毛利軍蠢蠢欲動，再燃一次狼煙，他們就會殺下來！':'南宮山仍無動靜……吉川那傢伙在搞什麼？點起狼煙催促吧。');
+    if(E&&seen('D')>=45) L.push('南宮山有異動！得趕快與吉川聯絡，否則我軍背後危險。');
+    if(!E&&state.turn>=2) L.push(seen('D')>=60?'南宮山的毛利軍蠢蠢欲動，再燃一次狼煙，他們就會殺下來！':'南宮山仍無動靜……吉川那傢伙在搞什麼？點起狼煙催促吧。');
   }
   if(foe&&foe.state==='active'&&foe.troops<foe.max*0.55) L.push(E?'石田已是強弩之末，一鼓作氣拿下笹尾山！':'家康本陣已經動搖，此乃天賜良機！');
   if(state.turn>=13) L.push(E?'天色漸晚。若今日不能決勝，各地西軍就要趕到了。':'再撐一下！日落之前守住陣地，就是我們的勝利！');
-  if(state.turn===5) L.push(E?'霧散了！鐵砲隊可以射擊笹尾山了。':'霧散了，東軍終於看清我們的陣勢——讓他們見識高地的厲害。');
-  if(!L.length) L.push(E?'戰況膠著。集中兵力圍攻一點，夾擊才能奏效。':'各隊堅守陣地，有柵欄與高地之利，敵人攻不上來。');
+  if(state.turn===state.fogEnd+1) L.push(E?'霧散了！鐵砲隊可以射擊笹尾山了。':'霧散了，東軍終於看清我們的陣勢——讓他們見識高地的厲害。');
+  const myHid=units.find(u=>u.side===P&&u.hid&&u.state==='active');
+  if(state.turn===2) L.push('別忘了各隊的「陣形」：接敵前用魚鱗攻、鶴翼守，長蛇只適合遠離敵軍時趕路。');
+  if(state.turn===3&&!units.some(u=>u.side===P&&u.skUsed)) L.push('福島、井伊、島左近等名將各有一次「絕技」，留到決戰時刻再用，往往能扭轉戰局。');
+  if(state.turn===4&&!state.scout[P]) L.push('松尾山的傳聞未必可信。派忍者探明實情，再決定要不要下重注。');
+  if(myHid) L.push(`${myHid.name}隊已在${TER[terr(myHid.c,myHid.r)].n}中埋伏，等敵軍靠近就能奇襲。`);
+  if(!L.length) L.push(E?'戰況膠著。集中兵力圍攻一點，夾擊才能奏效。騎馬隊專挑鐵砲隊下手。':'各隊堅守陣地，有柵欄與高地之利，敵人攻不上來。足輕槍陣正好剋制赤備騎兵。');
   return L.slice(0,2);
 }
 function renderAdvisor(flash){
@@ -974,8 +1151,9 @@ function updIntensity(){
 }
 
 /* ================= 戰鬥 ================= */
-async function attack(att,def,ranged){
+async function attack(att,def,ranged,amb){
   const p=calc(att,def,ranged,true);
+  const wasHid=att.hid;att.hid=false;
   const dt0=def.troops,at0=att.troops;
   if(!AUTO){
     const big=att.id==='ishida'&&ranged&&hdist(att,def)===3;
@@ -986,11 +1164,11 @@ async function attack(att,def,ranged){
   }
   def.troops-=p.dd;att.troops-=p.da;
   state.kills[att.side]+=p.dd;state.kills[def.side]+=p.da;
-  def.morale-=(moraleLoss(p.dd,dt0,1.7)+(ranged?1.5:3))*(def.id==='shimazu'?0.5:1);
+  def.morale-=(moraleLoss(p.dd,dt0,1.7)+(ranged?1.5:3)+(wasHid?10:0))*(def.id==='shimazu'?0.5:1)*(bf(att,'mor')||1);
   att.morale-=moraleLoss(p.da,at0,1.5)+(ranged?0:1);
   att.attacked=true;att.moved=true;
   if(!AUTO){fxBoom(def);fxText(def,'-'+p.dd.toLocaleString(),'#b3241a');if(p.da)setTimeout(()=>fxText(att,'-'+p.da.toLocaleString(),'#2d4777'),180);renderUnits();}
-  log(`${att.name}${ranged?'以鐵砲射擊':'突擊'}${def.name}：敵損${p.dd.toLocaleString()}、我損${p.da.toLocaleString()}${p.flank?`（夾擊×${p.flank}）`:''}`,att.side.toLowerCase());
+  log(`${att.name}${wasHid?'奇襲':ranged?'以鐵砲射擊':'突擊'}${def.name}：敵損${p.dd.toLocaleString()}、我損${p.da.toLocaleString()}${p.flank?`（夾擊×${p.flank}）`:''}${p.mu>1?'（兵種相剋）':''}`,att.side.toLowerCase());
   await checkRout(def);await checkRout(att);
   updPeak();updIntensity();
 }
@@ -1117,7 +1295,14 @@ async function startTurn(){
     else if(state.L>=70) await kobaDecide('W','time');
     else if(state.turn>=13) await kobaDecide(state.L<50?'E':'W','time');
   }
-  if(state.turn===5){log('霧散。整個關原盆地一覽無遺，鐵砲隊可以射擊了。','k');
+  for(const e of state.evq){
+    if(e.done||state.over||state.turn<e.t[0]||state.turn>e.t[1]||!e.c()) continue;
+    if(state.turn<e.t[1]&&Math.random()<.5) continue;
+    e.done=1;const [ti,sub,body,who]=e.run();
+    log(`【事件】${ti}：${sub}`,'k');
+    if(!AUTO){renderAll();await evt(ti,sub,body,who,'事件');}
+  }
+  if(state.turn===state.fogEnd+1){log('霧散。整個關原盆地一覽無遺，鐵砲隊可以射擊了。','k');
     if(!AUTO){renderAll();herald('霧散了！整個關原盆地一覽無遺！','','物見');await sleep(600);}}
   if(state.turn===7&&!state.kobaDone) herald('松尾山的旗幟仍然紋風不動……','','物見');
   if(state.over) return;
@@ -1125,8 +1310,8 @@ async function startTurn(){
 }
 async function beginPhase(side){
   if(state.over) return;
-  state.phase=side;
-  state.cp[side]=isAI(side)&&!AUTO?DIFF[state.diff].cp:3;
+  state.phase=side;state.tick++;plot=null;
+  state.cp[side]=(isAI(side)&&!AUTO?DIFF[state.diff].cp:3)+(state.plan[side]==='plot'&&side==='E'&&state.turn<=6?1:0)+(state.cpb[side]||0);state.cpb[side]=0;
   units.forEach(u=>{
     if(u.side!==side||u.state!=='active') return;
     u.moved=false;u.attacked=false;
@@ -1152,6 +1337,8 @@ async function endPhase(){
 /* ================= AI ================= */
 async function runAI(side){
   aiStrategy(side);
+  await aiPlots(side);
+  if(state.over) return;
   renderAll();
   if(side==='E'&&!state.kobaDone&&!state.teppo&&state.turn>=8&&state.L<60&&state.cp.E>=2&&Math.random()<.7) await stratAct('E','teppo');
   if(!AUTO&&!state.over){
@@ -1171,6 +1358,39 @@ async function runAI(side){
     const w=units.filter(u=>u.side===side&&u.state==='active'&&u.morale<65).sort((a,b)=>(a.morale-(a.cmd?40:0))-(b.morale-(b.cmd?40:0)))[0];
     if(!w) break; rally(w,side);
   }
+}
+async function aiPlots(side){
+  let guard=0;
+  while(guard++<3&&!state.over){
+    const cp=state.cp[side],opts=[];
+    const gT=units.filter(e=>e.state==='active'&&e.side!==side&&!e.hid&&visibleTo(e,side)&&e.morale<60&&units.some(u=>u.side===side&&u.state==='active'&&hdist(u,e)<=2)).sort((a,b)=>a.morale-b.morale);
+    if(cp>=2&&gT.length) opts.push(['gihou',gT[0].morale<35?4:2,gT[0]]);
+    const fT=plotTargets(side,'fire').filter(([c,r])=>{const o=unitAt(c,r);return o&&o.side!==side&&o.state==='active'&&!o.hid;});
+    if(cp>=1&&fT.length) opts.push(['fire',2,fT[0]]);
+    const aT=plotTargets(side,'ambush').filter(([c,r])=>{const u=unitAt(c,r);const d=Math.min(99,...units.filter(e=>isEnemy(u,e)&&!e.hid).map(e=>hdist(u,e)));return d>=2&&d<=4&&u.role!=='hold';});
+    if(cp>=2&&state.turn<=9&&!units.some(u=>u.side===side&&u.hid)&&aT.length&&Math.random()<.35) opts.push(['ambush',2,aT[0]]);
+    if(cp>=1&&!state.eyes[side]&&state.turn>=2&&state.turn<=8&&Math.random()<.25) opts.push(['ninja',1]);
+    if(!opts.length) break;
+    if(cp<=1&&units.some(u=>u.side===side&&u.state==='active'&&u.morale<40)) break;
+    const o=opts.sort((a,b)=>b[1]-a[1])[0];
+    if(Math.random()<.45) break;
+    const t=o[2];
+    if(o[0]==='gihou') await doPlot(side,'gihou',t.c,t.r);
+    else if(o[0]==='fire'||o[0]==='ambush') await doPlot(side,o[0],t[0],t[1]);
+    else await doPlot(side,'ninja');
+    if(!AUTO){renderAll();await sleep(350);}
+  }
+}
+function aiStance(u){
+  if(u.moved||u.attacked) return;
+  const near=Math.min(99,...units.filter(e=>isEnemy(u,e)&&!e.hid).map(e=>hdist(u,e)));
+  let s='n';
+  if(u.cmd) s=near<=3?'def':'n';
+  else if(u.role==='hold'||u.fort) s=near<=3?'def':'n';
+  else if(u.role==='rear'&&!state.nanguDone) s='def';
+  else if(near>=6) s='col';
+  else if(near<=3) s=u.morale>=55&&u.troops>u.max*.45?'atk':'def';
+  u.st=s;
 }
 function aiStrategy(side){
   let guard=0;
@@ -1203,13 +1423,17 @@ async function aiAttackBest(u){
   await attack(u,tg[0].e,tg[0].ranged);return true;
 }
 function aiGoal(u){
-  const enemies=units.filter(e=>isEnemy(u,e));
+  const enemies=units.filter(e=>isEnemy(u,e)&&!e.hid);
   if(!enemies.length) return null;
   let best=null,bs=1e9;
   enemies.forEach(e=>{let d=hdist(u,e);if(e.cmd)d-=2.5;d-=(100-e.morale)/60;if(d<bs){bs=d;best=e;}});
   return best;
 }
 async function aiUnit(u){
+  if(bf(u,'lock')) return false;
+  if(u.hid&&!targets(u).some(t=>!t.ranged)) return false;
+  aiStance(u);
+  if(canSkill(u)&&SK[u.id].ai(u)&&Math.random()<.7){await useSkill(u);if(u.state!=='active'||state.over)return true;}
   let role=u.role;
   if(u.defected||u.group) role='adv';
   if(role==='rear'){
@@ -1251,6 +1475,8 @@ async function aiUnit(u){
   let acted=false;
   if(best){
     u.c=best[0];u.r=best[1];u.moved=true;u.fort=false;acted=true;
+    if(u.hid&&!'fv'.includes(terr(u.c,u.r)))u.hid=false;
+    await ambushCheck(u);if(u.state!=='active'||state.over)return true;
     if(!AUTO){renderUnits();await sleep(330);
       if(u.id==='ieyasu'&&!state.jinba){state.jinba=1;if(visibleTo(u,state.player))herald('家康將本陣推進至陣場野，親自督戰！','E','物見');say(u,'全軍前進！不許後退一步！',true);}}
   }
@@ -1270,8 +1496,15 @@ function selectUnit(u){
   TG=mine?targets(u):[];
   renderAll();
 }
+async function onPlot(c,r){
+  const P=state.player,k=plot;
+  if(!plotTargets(P,k).some(([x,y])=>x===c&&y===r)){plot=null;renderAll();return;}
+  plot=null;busy=true;await doPlot(P,k,c,r);busy=false;
+  if(!state.over){renderAll();renderAdvisor();}
+}
 function onHex(c,r){
   if(state.over) return;
+  if(plot&&!isAI(state.phase)&&!busy){onPlot(c,r);return;}
   const u=unitAt(c,r);
   const vis=u&&visibleTo(u,state.player);
   const myTurn=!isAI(state.phase)&&!busy;
@@ -1281,10 +1514,14 @@ function onHex(c,r){
   }
   if(sel&&myTurn&&!u&&R.has(key(c,r))){
     sel.c=c;sel.r=r;sel.moved=true;sel.fort=false;pend=null;
-    R=new Map();TG=targets(sel);
-    if(!TG.length) sel.attacked=true;
+    if(sel.hid&&!'fv'.includes(terr(c,r)))sel.hid=false;
+    R=new Map();
     drum(.25);
-    renderAll();return;
+    const mv=sel;busy=true;
+    ambushCheck(mv).then(()=>{busy=false;if(state.over)return;
+      if(mv.state!=='active'){sel=null;renderAll();return;}
+      TG=targets(mv);if(!TG.length)mv.attacked=true;renderAll();});
+    return;
   }
   if(u&&vis){selectUnit(u);return;}
   sel=null;pend=null;R=new Map();TG=[];renderAll();
@@ -1301,14 +1538,14 @@ async function playerAttack(e){
 }
 document.getElementById('endBtn').onclick=async()=>{
   if(isAI(state.phase)||busy||state.over) return;
-  const idle=units.filter(u=>u.side===state.player&&u.state==='active'&&!u.moved&&!u.attacked).length;
+  const idle=units.filter(u=>u.side===state.player&&u.state==='active'&&!u.moved&&!u.attacked&&!bf(u,'lock')).length;
   if(idle>0&&state.cp[state.player]>0&&!(await modal(`<h2>結束回合？</h2><p>還有 ${idle} 支部隊未行動、${state.cp[state.player]} 點軍令未使用。</p>`,[['返回',false],['結束回合',true]]))) return;
   sel=null;pend=null;R=new Map();TG=[];
   await endPhase();
 };
 document.getElementById('nextBtn').onclick=()=>{
   if(isAI(state.phase)||busy) return;
-  const l=units.filter(u=>u.side===state.player&&u.state==='active'&&!u.attacked&&(!u.moved||targets(u).length));
+  const l=units.filter(u=>u.side===state.player&&u.state==='active'&&!u.attacked&&!bf(u,'lock')&&(!u.moved||targets(u).length));
   if(!l.length){sel=null;renderAll();return;}
   const i=sel?l.indexOf(sel):-1;const u=l[(i+1)%l.length];selectUnit(u);
   const [x]=px(u.c,u.r);const w=document.querySelector('.mapwrap');
@@ -1359,12 +1596,20 @@ async function gameOver(winner,why){
 
 /* ================= 說明 ================= */
 function showHelp(){
-  modal(`<h2>遊戲說明</h2><div class="mt">每回合 30 分鐘，從辰刻 8:00 到申刻 16:00，共 16 回合。東軍先動。</div>
+  modal(`<h2>遊戲說明</h2><div class="mt">每回合 30 分鐘，從辰刻 8:00 到申刻 16:00，共 16 回合。東軍先動。霧通常在巳刻 10:00 前後散去。</div>
   <p><b>行動</b>：每支部隊每回合可「移動」再「攻擊」一次。移動進入敵軍相鄰格會被牽制停下。有鐵砲的部隊在原地不動時可遠距射擊（霧中不行）。</p>
   <p><b>地形</b>：丘陵防禦×1.3、山地×1.5、森林×1.2、村落×1.15；河川中防禦×0.8且攻擊減弱。山地移動消耗3、丘陵與森林2，街道一律1。西軍開戰時的陣地設有馬防柵（防禦×1.25），一旦移動就失去。</p>
   <p><b>戰鬥</b>：兵力越多越強（超過五千人的部分效益遞減）。多支部隊圍攻同一目標有夾擊加成（每支+12%）。士氣歸零或兵力低於兩成即潰走，並打擊鄰近友軍士氣。霧中近戰威力減弱。</p>
   <p><b>兵種</b>：旗幟左下角的圓形徽章代表兵種，點選部隊可在右側看到詳細說明。</p>
   <table style="width:100%;border-collapse:collapse;font-size:14px;margin:-4px 0 12px">${Object.keys(UT).map(t=>`<tr style="border-top:1px solid #d9cdb0"><td style="padding:5px 6px;white-space:nowrap">${utBadge(t)} <b>${UT[t].full}</b></td><td style="padding:5px 6px;text-align:left">${UT[t].d}<br><small style="color:var(--muted)">代表：${UDEF.filter(d=>utype({gun:d[8],mov:d[7]})===t).map(d=>d[1]).join('、')||'—'}</small></td></tr>`).join('')}</table>
+  <p><b>兵種相剋</b>：騎馬衝擊鐵砲、大筒時傷害×1.3，但面對足輕槍陣×0.85；足輕迎擊騎馬×1.15；鐵砲、大筒射擊騎馬×1.3。攻擊預估會顯示相剋。</p>
+  <p><b>陣形</b>（右下角方塊）：每支部隊在<b>移動前</b>可切換，效果持續到下次變更。</p>
+  <table style="width:100%;border-collapse:collapse;font-size:14px;margin:-4px 0 12px">${Object.keys(ST).map(k=>`<tr style="border-top:1px solid #d9cdb0"><td style="padding:4px 6px;white-space:nowrap"><b>${ST[k].n}</b></td><td style="padding:4px 6px;text-align:left">${ST[k].d}</td></tr>`).join('')}</table>
+  <p><b>絕技</b>：名將各有一招一場限用一次的絕技，點選部隊即可查看與發動：</p>
+  <table style="width:100%;border-collapse:collapse;font-size:13.5px;margin:-4px 0 12px">${Object.keys(SK).map(id=>`<tr style="border-top:1px solid #d9cdb0"><td style="padding:4px 6px;white-space:nowrap">${UDEF.find(d=>d[0]===id)[1]}<br><b>「${SK[id].n}」</b></td><td style="padding:4px 6px;text-align:left">${SK[id].d}</td></tr>`).join('')}</table>
+  <p><b>計略</b>（花費軍令）：</p><ul>${Object.keys(PLOT).map(k=>`<li><b>${PLOT[k].n}（${PLOT[k].c}）</b>：${PLOT[k].d}</li>`).join('')}</ul>
+  <p><b>情報</b>：小早川、四將、南宮山的量表平時只是<b>傳聞</b>（誤差約±12），派忍者才能看到真實數值。</p>
+  <p><b>軍議與事件</b>：開戰前選擇方略（敵方方略不公開）。戰鬥中會隨機發生史實事件——霧提早或延後散去、吉川的密使、大谷病情惡化、島津拒絕出兵……每場都不一樣。</p>
   <p><b>主帥</b>：家康周圍3格、三成周圍2格的友軍攻擊+10%、士氣恢復加倍。主帥兵力跌破四分之一即潰走、敗北。主帥以外兵力跌破巔峰的35%，全軍崩潰。</p>
   <p><b>軍令</b>：每回合3點，可用於「激勵」部隊（士氣+25），或調略／督促觀望勢力：</p>
   <ul><li><b>小早川秀秋</b>：午刻（11:30）起，去就值≤35倒戈東軍、≥70投入西軍；14:00 前必定表態。</li>
@@ -1407,19 +1652,23 @@ async function startGame(side,diff,withPrologue){
   document.getElementById('game').classList.remove('hidden');
   newGame(side,diff);buildBoard();
   if(!AUTO){setMode('fog');syncAudioBtns();document.getElementById('herald').innerHTML='';}
+  ['E','W'].forEach(s=>{if(isAI(s))state.plan[s]=pick(PLANS[s])[0];});
   log('辰刻，關原盆地濃霧瀰漫，兩軍近在咫尺卻不見彼此。','k');
   log('井伊直政與松平忠吉繞過福島隊，搶先向宇喜多隊開火——戰端開啟！','k e');
   renderAll();renderAdvisor();
   if(!AUTO){
     if(withPrologue) await prologue(side);
+    const pl=PLANS[side];
+    state.plan[side]=await modal(`<h2>軍議</h2><div class="mt">${side==='E'?'桃配山本陣・家康召集諸將':'笹尾山本陣・三成召集諸將'}——開戰前，決定我軍的方略。</div>${pl.map(x=>`<p><b>${x[1]}</b>：${x[2]}<br><span style="color:var(--muted);font-size:14px">${x[3]}</span></p>`).join('')}<div class="quote">敵軍也在擬定方略，內容不得而知。</div>`,pl.map(x=>[x[1],x[0]]),'scroll');
     horn();
     await modal(`<div class="mhead">${side==='E'?crest('aoi','',64):crest('ishida','',64)}<div><h2>${side==='E'?'東軍 德川家康':'西軍 石田三成'}</h2><div class="mt" style="margin:0">慶長五年九月十五日・辰刻 8:00・濃霧</div></div></div>
     ${side==='E'?'<p>主公，西軍已佔據笹尾山、天滿山、松尾山，鶴翼之陣張開等待我軍。我軍前鋒福島、井伊已與宇喜多隊接觸。</p><p>正面強攻固然重要，但真正的勝負在<b>松尾山</b>與<b>南宮山</b>——用軍令「調略」小早川與吉川，讓西軍從內部崩解。</p><p>擊潰笹尾山上的石田三成即可獲勝。</p>':'<p>治部殿，我軍佔盡地利，三面高地已將家康圍在盆地之中。只要守住陣地、等待松尾山與南宮山的大軍殺下，勝利就是我們的。</p><p>但小早川秀秋與吉川廣家心意難測——務必以軍令不斷<b>督促</b>，並在必要時<b>激勵</b>前線部隊。</p><p>守住笹尾山，撐到申刻，或擊潰德川本陣即可獲勝。</p>'}
-    <div class="quote">霧中只能看見我軍周圍3格內的敵軍，鐵砲無法射擊。霧將在巳刻 10:00 散去。</div>`,[['出陣！',true]],'scroll');
+    <div class="quote">霧中只能看見我軍周圍3格內的敵軍，鐵砲無法射擊。霧預計在巳刻 10:00 前後散去。</div>`,[['出陣！',true]],'scroll');
     say(U('ii'),'井伊直政，搶先一步了！',true);gunfx(5);fxSmoke(U('ii'),4);
     setTimeout(()=>say(U('fukushima'),'可惡，竟被搶先！',true),900);
     await sleep(1200);
   }
+  applyPlans();
   await startTurn();
 }
 if(AUTO){startGame(/side=W/.test(location.search)?'W':'E',1);}
