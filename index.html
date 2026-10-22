@@ -38,6 +38,7 @@ button{font-family:inherit;cursor:pointer}
 .t-sub{font-size:clamp(15px,2.6vw,19px);letter-spacing:.35em;color:var(--muted)}
 .t-intro{max-width:760px;margin:18px auto 26px;line-height:1.95;font-size:15.5px;text-align:justify}
 .sides{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.side-card.r{grid-column:1/-1}
 @media(max-width:720px){.sides{grid-template-columns:1fr}}
 .side-card{display:flex;flex-direction:column;justify-content:flex-start;border:2px solid var(--line);background:var(--paper2);padding:18px 18px 16px;position:relative;cursor:pointer;transition:transform .15s,box-shadow .15s;text-align:left;color:inherit;font-size:inherit;width:100%}
 .side-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(60,40,10,.15)}
@@ -343,6 +344,14 @@ button{font-family:inherit;cursor:pointer}
       <p>布陣於高地、形成鶴翼包圍之勢，地利盡在我方。但小早川、脇坂四將與南宮山的毛利軍心意未定，必須不斷「督促」、點燃狼煙催促出陣。</p>
       <p>若能讓松尾山與南宮山同時殺下，家康將腹背受敵。</p>
       <div class="goal">勝利條件：擊潰德川家康本陣，或使東軍崩潰；或堅守至申刻（16:00）不敗。</div>
+    </button>
+    <button class="side-card w r" data-side="R">
+      <div class="mon" id="monR"></div>
+      <img class="face w pt" src="img/p_shimazu.webp" alt="" onerror="this.remove()"><h2>劇本・島津的退口</h2>
+      <div class="lead">島津義弘　殘兵一千五百</div>
+      <p>未刻，小早川倒戈，西軍各隊相繼潰走。戰場上只剩下按兵不動的島津隊——被東軍數萬大軍團團圍住。</p>
+      <p>義弘的決定是：不往後逃，而是<b>正面衝破敵陣</b>，殺向伊勢街道。</p>
+      <div class="goal">勝利條件：申刻（16:00）前，讓島津隊抵達南方伊勢街道的出口（地圖下緣的金色格）。史實：一千五百人，回到薩摩的只有八十餘人。</div>
     </button>
   </div>
   <div class="t-opts">
@@ -1340,7 +1349,7 @@ const POEM={
 };
 async function checkRout(u){
   if(u.state!=='active') return;
-  if(u.cmd){if(u.troops>u.max*0.25) return;}
+  if(u.cmd){if(u.troops>u.max*(state.mode==='retreat'?0.08:0.25)) return;}   // 退口：島津死戰到最後
   else if(u.morale>0&&u.troops>u.max*0.2) return;
   if(!AUTO){say(u,pick(['撤……撤退！','頂不住了！','快逃啊！']),true);await sleep(400);fxDie(u);}
   u.state='routed';
@@ -1481,7 +1490,7 @@ async function startTurn(){
     if(!AUTO){renderAll();herald('霧散了！整個關原盆地一覽無遺！','','物見');await sleep(600);}}
   if(state.turn===7&&!state.kobaDone) herald('松尾山的旗幟仍然紋風不動……','','物見');
   if(state.over) return;
-  await beginPhase('E');
+  await beginPhase(state.mode==='retreat'?'W':'E');   // 退口：島津先動
 }
 async function beginPhase(side){
   if(state.over) return;
@@ -1501,7 +1510,8 @@ async function beginPhase(side){
 }
 async function endPhase(){
   if(state.over) return;
-  if(state.phase==='E') await beginPhase('W');
+  const first=state.mode==='retreat'?'W':'E';
+  if(state.phase===first) await beginPhase(other(first));
   else{
     state.turn++;
     if(state.turn>16){await gameOver(null,'time');return;}
@@ -1750,6 +1760,7 @@ document.getElementById('sndBtn').onclick=()=>{AU.sfxOn=!AU.sfxOn;if(auInit())AU
 async function gameOver(winner,why){
   if(state.over) return;
   state.over=true;busy=false;
+  if(state.mode==='retreat') return retreatEnd(why==='retreat');
   let grade='';
   if(why==='time'){winner=state.kills.E>=state.kills.W*1.25?'E':'W';grade=winner==='E'?'判定勝利':'堅守成功';}
   else grade=why==='cmd'?'決定性勝利':'大勝';
@@ -1850,12 +1861,13 @@ async function prologue(side){
 }
 document.querySelectorAll('.side-card').forEach(c=>c.onclick=()=>{
   chosenSide=c.dataset.side;document.querySelectorAll('.side-card').forEach(x=>x.classList.toggle('on',x===c));
-  const b=document.getElementById('startBtn');b.disabled=false;b.textContent=`以${SN[chosenSide]}出陣`;
+  const b=document.getElementById('startBtn');b.disabled=false;b.textContent=chosenSide==='R'?'以島津隊突圍':`以${SN[chosenSide]}出陣`;
 });
 document.getElementById('monE').innerHTML=crest('aoi','',54,'#f6f0e1','#2d4777');
 document.getElementById('monW').innerHTML=crest('ishida','',54,'#f6f0e1','#962a22');
+if(document.getElementById('monR'))document.getElementById('monR').innerHTML=crest('shimazu','',54,'#f6f0e1','#962a22');
 document.querySelectorAll('#diffSeg button').forEach(b=>b.onclick=()=>{chosenDiff=+b.dataset.d;document.querySelectorAll('#diffSeg button').forEach(x=>x.classList.toggle('on',x===b));});
-document.getElementById('startBtn').onclick=()=>{auInit();musicStart();startGame(chosenSide,chosenDiff,true);};
+document.getElementById('startBtn').onclick=()=>{auInit();musicStart();if(chosenSide==='R')startRetreat(chosenDiff);else startGame(chosenSide,chosenDiff,true);};
 async function startGame(side,diff,withPrologue){
   document.getElementById('title').classList.add('hidden');
   document.getElementById('game').classList.remove('hidden');
@@ -1911,7 +1923,103 @@ function tutTick(){
 }
 function tutEnd(done){clearInterval(tutT);tutI=-1;const el=document.getElementById('tut');if(el)el.remove();try{localStorage.setItem('sekiTut','1')}catch(e){}if(done===true)modal('<h2>教學完成</h2><p>接下來就交給你了，主公。</p><p style="font-size:14px;color:var(--muted)">想再看一次教學：右上「說明」最下面可以重新開始。</p>')}
 const tbh=()=>{const t=document.querySelector('.topbar');if(t)document.documentElement.style.setProperty('--tbh',t.offsetHeight+'px')};addEventListener('resize',tbh);setInterval(tbh,1000);
-if(AUTO){startGame(/side=W/.test(location.search)?'W':'E',1);}
+/* ================= 劇本：島津的退口 ================= */
+const EXIT=[];for(let c=7;c<=11;c++)EXIT.push([c,H-1]);   // 伊勢街道出口（地圖最下緣）
+const atExit=u=>EXIT.some(([c,r])=>u.c===c&&u.r===r);
+async function startRetreat(diff){
+  document.getElementById('title').classList.add('hidden');
+  document.getElementById('game').classList.remove('hidden');
+  newGame('W',diff);
+  Object.assign(state,{mode:'retreat',turn:11,fogEnd:0,kobaDone:true,kobaRes:'E',nanguDone:true,nanguRes:'stay',evq:[],phase:'W'});
+  for(const u of units){
+    if(u.group==='koba'||u.group==='four'){u.side='E';u.defected=true;u.state='active';u.morale=95;}
+    else if(u.side==='W'&&u.id!=='shimazu'&&!u.group) u.state='routed';
+  }
+  const sz=U('shimazu');Object.assign(sz,{morale:100,fort:false,cmd:true});   // 島津潰走＝失敗
+  buff(sz,{nozoc:1,df:1.7},99);   // 死兵：不受牽制、防禦提高
+  // 未刻：東軍主力往北追擊，湧向西軍原本的陣地（家康本陣、倒戈的小早川等留在原地）
+  const westHomes=units.filter(u=>u.origSide==='W'&&!u.group&&u.id!=='shimazu').map(u=>u.home);
+  const taken=new Set(units.filter(u=>u.state==='active').map(u=>u.c+','+u.r));
+  for(const u of units){
+    if(u.side!=='E'||u.cmd||u.defected||u.state!=='active'||Math.random()<.4) continue;   // 約六成往北追擊，其餘留在中央
+    const h=westHomes[Math.floor(Math.random()*westHomes.length)];
+    let spot=null;
+    for(let d=0;d<=3&&!spot;d++) for(let c=h.c-d;c<=h.c+d&&!spot;c++) for(let r=h.r-d;r<=h.r+d&&!spot;r++){
+      if(c<0||r<0||c>=W||r>=H||taken.has(c+','+r)||hdist({c,r},sz)<=2) continue;
+      if(hdist({c,r},h)===d){spot=[c,r];}
+    }
+    if(spot){taken.delete(u.c+','+u.r);u.c=spot[0];u.r=spot[1];taken.add(spot.join(','));}
+  }
+  state.peak.W=sz.troops;
+  buildBoard();
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.id='exitZone';
+  g.innerHTML=EXIT.map(([c,r])=>{const [x,y]=px(c,r);return `<polygon points="${hexPts(x,y)}" fill="rgba(229,185,60,.32)" stroke="#c99a2c" stroke-width="2"/>`;}).join('')+(()=>{const [x,y]=px(9,13);return `<text x="${x}" y="${y-30}" text-anchor="middle" class="lbl big" style="fill:#7a5a10">出口</text>`})();
+  svg.appendChild(g);
+  setMode('climax');syncAudioBtns();document.getElementById('herald').innerHTML='';
+  log('未刻，小早川秀秋倒戈。大谷、宇喜多、小西、石田相繼潰走。','k');
+  log('島津義弘：「敵陣正面，突破！目標伊勢街道！」','k w');
+  renderAll();renderAdvisor();
+  if(!AUTO&&!VIEW) await modal(`<div class="mhead">${face('shimazu',72,'W')}<div><h2>島津的退口</h2><div class="mt" style="margin:0">慶長五年九月十五日　未刻 13:00</div></div></div>
+    <p>西軍已經崩潰。四周全是東軍的旗幟——井伊、本多、福島……還有剛倒戈的小早川一萬五千人。</p>
+    <p>家臣勸義弘往後方的伊吹山逃。義弘搖頭：「往後逃，只會被追著砍。<b>往前衝</b>，衝破家康的本陣前方，從伊勢街道回薩摩。」</p>
+    <div class="quote">在申刻 16:00 前，讓島津隊抵達南方金色的「出口」格。島津隊潰走即失敗。<br>移動進入敵軍相鄰格會被牽制——找縫隙穿過去，必要時殺出一條血路。</div>`,[['出陣',true]]);
+  clearInterval(startRetreat.t);
+  startRetreat.t=setInterval(()=>{if(state.mode!=='retreat'||state.over){clearInterval(startRetreat.t);return}if(!busy&&sz.state==='active'&&atExit(sz))gameOver('W','retreat');},400);
+  await startTurn();
+}
+// 退口：島津的 AI（自動測試用）＝往出口最近的格子衝
+// 到出口的「地形路程」：從出口往外做 Dijkstra（山地 3、丘陵森林 2…），被敵軍佔住的格子加重
+function exitField(){
+  const D=new Map(),q=EXIT.map(([c,r])=>[0,c,r]);EXIT.forEach(([c,r])=>D.set(key(c,r),0));
+  while(q.length){q.sort((a,b)=>a[0]-b[0]);const [d,c,r]=q.shift();if(d>D.get(key(c,r)))continue;
+    for(const [nc,nr] of nbrs(c,r)){const o=unitAt(nc,nr);const nd=d+moveCost(c,r)+(o&&o.side==='E'&&o.state==='active'?6:0);const k=key(nc,nr);if(!D.has(k)||nd<D.get(k)){D.set(k,nd);q.push([nd,nc,nr]);}}}
+  return D;
+}
+let EXF=null;const exitDist=(c,r)=>{const v=EXF&&EXF.get(key(c,r));return v==null?99:v;};
+const _aiUnitR=aiUnit;
+aiUnit=async function(u){
+  if(state.mode==='retreat'&&u.id==='shimazu'){
+    EXF=exitField();const R0=reach(u);let best=null,bd=exitDist(u.c,u.r);
+    for(const k of R0.keys()){const [c,r]=k.split(',').map(Number);if(unitAt(c,r))continue;const d=exitDist(c,r);if(d<bd){bd=d;best=[c,r];}}
+    if(best){u.c=best[0];u.r=best[1];u.moved=true;renderAll();await sleep(300);}
+    (state.szPath=state.szPath||[]).push(`${u.c},${u.r}:${u.troops}:${bd}`);
+    if(!state.over&&atExit(u)){await gameOver('W','retreat');return true;}
+    return true;
+  }
+  if(state.mode==='retreat'&&u.side==='E'&&hdist(u,U('shimazu'))>10) return false;   // 遠處的東軍忙著追擊潰兵
+  return _aiUnitR(u);
+};
+// 捨て奸：每回合島津第一次被攻擊時，斷後的家臣擋下（並拖住攻擊者一回合）
+const _attackR=attack;
+attack=async function(att,def,ranged,amb){
+  if(state.mode==='retreat'&&def.id==='shimazu'){   // 道路狹窄：每回合最多 3 支（困難 4 支）部隊打得到島津
+    state.szHits=state.szHits||{};const k=state.turn+state.phase;state.szHits[k]=(state.szHits[k]||0)+1;
+    const cap=state.diff>=2?4:3;if(state.szHits[k]>cap){att.attacked=true;if(state.szHits[k]===cap+1)log('【隘路】大軍擠在狹窄的道路上，後面的部隊打不到島津隊。','k w');return;}
+  }
+  if(state.mode==='retreat'&&def.id==='shimazu'&&state.sgTurn!==state.turn){
+    state.sgTurn=state.turn;
+    const who=pick(['島津豐久','長壽院盛淳','阿多盛淳','川上忠兄']);
+    log(`【捨て奸】${who}留下斷後，以身擋住了${att.name}隊！`,'k w');
+    if(!AUTO){say(def,`${who}：「主公，快走！」`,true);await sleep(700);}
+    att.attacked=true;buff(att,{lock:1},1);def.troops=Math.max(1,def.troops-60);renderAll();
+    return;
+  }
+  return _attackR(att,def,ranged,amb);
+};
+async function retreatEnd(win){
+  const sz=U('shimazu'),left=sz.state==='active'?sz.troops:0,pct=left/1500;
+  const rank=!win?'—':pct>=.6?'特':pct>=.35?'甲':pct>=.15?'乙':'丙';
+  if(win&&!AUTO) unlock('shimazu');
+  if(AUTO){document.title=`RESULT retreat ${win?'escape':'fail'} turn${state.turn} left${left} path ${(state.szPath||[]).join(' ')}`;return;}
+  updIntensity();renderAll();horn();await sleep(1200);
+  const res=await modal(`<div class="mhead">${face('shimazu',72,'W')}<div><h2 class="res-w">${win?'突圍成功':'突圍失敗'}</h2><div class="mt" style="margin:0">島津的退口・評定 ${rank}</div></div></div>
+    <p>${win?`島津隊衝破東軍陣線，沿著伊勢街道一路南下。<br>脫出時剩下的兵力：<b>${left.toLocaleString()}</b> 人（${Math.round(pct*100)}%）。`:'島津隊在東軍的包圍中力戰而潰……義弘沒能回到薩摩。'}</p>
+    <div class="quote">史實：島津豐久、長壽院盛淳等家臣輪流留下斷後（「捨て奸」），以命換時間。一千五百人回到薩摩的，只有八十餘人。這場撤退讓德川家康不敢對島津家用兵，島津氏得以保全領地。</div>
+    <p style="font-size:13.5px;color:var(--muted)">評定：脫出兵力 ≥60% 特、≥35% 甲、≥15% 乙。</p>`,[['回到標題',0],['再挑戰',1]],'scroll');
+  if(res===1)startRetreat(state.diff);else location.reload();
+}
+if(AUTO&&/retreat=1/.test(location.search)){startRetreat(1);}
+else if(AUTO){startGame(/side=W/.test(location.search)?'W':'E',1);}
 else if(VIEW){startGame(VIEW,1);}
 </script>
 </body>
