@@ -597,7 +597,7 @@ const EVENTS=[
     ['接受承諾',()=>{state.D=clamp(state.D-15,0,100);return '吉川的承諾已收下。南宮山 出陣度 -15';}],
     ['要求交出人質（賭一把）',()=>{if(Math.random()<.65){state.D=clamp(state.D-30,0,100);return '吉川交出了人質。南宮山 出陣度 -30';}state.D=clamp(state.D+10,0,100);return '吉川大怒：「內府信不過毛利家？」南宮山 出陣度 +10';}]]}]},
   {t:[5,8],c:()=>!state.nanguDone,run:()=>['毛利秀元的焦躁','南宮山的催促','<p>聽著山下震天的殺聲，年輕的毛利秀元再也坐不住了：「吉川，為何還不出兵！」他派使者飛馳到笹尾山，請求石田三成點起狼煙。</p>',U('mori'),'mori',{side:'W',ai:-1,opts:[
-    ['連燃三道狼煙（下回合軍令-1）',()=>{state.D=clamp(state.D+25,0,100);state.cpb.W=(state.cpb.W||0)-1;return '笹尾山狼煙沖天！南宮山 出陣度 +25';}],
+    ['連燃三道狼煙（本回合軍令-1）',()=>{state.D=clamp(state.D+25,0,100);state.cpb.W=(state.cpb.W||0)-1;return '笹尾山狼煙沖天！南宮山 出陣度 +25';}],
     ['先靜觀其變',()=>{state.D=clamp(state.D+10,0,100);return '秀元按捺著怒氣等待。南宮山 出陣度 +10';}]]}]},
   {t:[6,10],c:()=>U('otani').state==='active',run:()=>{const o=U('otani');o.morale-=20;buff(o,{atk:.85},4);return ['大谷病情惡化','大谷吉繼 士氣-20、攻擊-15%（兩回合）','<p>大谷吉繼的病已經讓他看不見了。他坐在轎中，聽著戰況指揮，咳嗽卻越來越重。</p>',o];}},
   {t:[1,3],c:()=>U('fukushima').state==='active',run:()=>['爭奪先鋒','福島正則的怒火','<p>被井伊直政搶走先鋒的福島正則勃然大怒：「先鋒是我福島的！」他的使番衝進本陣，要求立刻全軍突擊。</p>',U('fukushima'),null,{side:'E',ai:0,opts:[
@@ -609,10 +609,10 @@ const EVENTS=[
     ['許以關白之位與兩國',()=>{state.L=clamp(state.L+12,0,100);return '使者恭敬地退下。小早川去就 +12';}],
     ['斥其首鼠兩端',()=>{if(Math.random()<.5){state.L=clamp(state.L+20,0,100);return '秀秋羞愧難當，決意履行盟約。小早川去就 +20';}state.L=clamp(state.L-12,0,100);return '秀秋懷恨在心。小早川去就 -12';}]]}];}},
   {t:[6,10],c:()=>U('shimazu').state==='active'&&U('shimazu').side==='W',run:()=>['島津拒絕出兵','島津義弘按兵不動','<p>石田三成的使者騎馬到島津陣前催促出擊，島津豐久怒斥：「戰場上下馬傳令才是禮數！各自為戰，休要多言！」</p><div class="quote">「靠近者，不論敵我，一律射殺。」</div>',U('shimazu'),null,{side:'W',ai:1,opts:[
-    ['三成親自下馬懇請（下回合軍令-1）',()=>{state.cpb.W=(state.cpb.W||0)-1;const sz=U('shimazu');if(Math.random()<.55){sz.morale=Math.min(100,sz.morale+15);buff(sz,{atk:1.15},3);return '義弘：「……看在治部下馬的份上。」島津隊士氣+15、攻擊+15%';}buff(sz,{lock:1},2);return '豐久冷冷回絕。島津隊仍按兵不動（一回合）';}],
+    ['三成親自下馬懇請（本回合軍令-1）',()=>{state.cpb.W=(state.cpb.W||0)-1;const sz=U('shimazu');if(Math.random()<.55){sz.morale=Math.min(100,sz.morale+15);buff(sz,{atk:1.15},3);return '義弘：「……看在治部下馬的份上。」島津隊士氣+15、攻擊+15%';}buff(sz,{lock:1},2);return '豐久冷冷回絕。島津隊仍按兵不動（一回合）';}],
     ['隨他去吧',()=>{buff(U('shimazu'),{lock:1},4);return '島津隊兩回合按兵不動';}]]}]},
   {t:[4,8],c:()=>!state.kobaDone&&U('otani').state==='active',run:()=>['大谷的請求','刑部少輔的密報','<p>大谷吉繼派人送來密信：「金吾中納言陣中往來的使者太多了。請分兵監視松尾山，以防萬一。」</p>',U('otani'),null,{side:'W',ai:-1,opts:[
-    ['分兵監視松尾山（下回合軍令-1）',()=>{state.cpb.W=(state.cpb.W||0)-1;state.F=clamp(state.F+15,0,100);state.L=clamp(state.L+6,0,100);return '四將不敢妄動。脇坂四將 +15、小早川去就 +6';}],
+    ['分兵監視松尾山（本回合軍令-1）',()=>{state.cpb.W=(state.cpb.W||0)-1;state.F=clamp(state.F+15,0,100);state.L=clamp(state.L+6,0,100);return '四將不敢妄動。脇坂四將 +15、小早川去就 +6';}],
     ['兵力吃緊，婉拒',()=>{U('otani').morale-=10;state.F=clamp(state.F-5,0,100);return '大谷嘆了口氣。大谷隊士氣-10、四將 -5';}]]}]},
   {t:[7,11],c:()=>U('ieyasu').state==='active'&&!state.kobaDone,run:()=>['家康咬指甲','內府的焦躁','<p>小早川遲遲不動，家康焦躁地咬著指甲：「那個小毛頭……！」</p>',U('ieyasu'),null,{side:'E',ai:0,opts:[
     ['再派使者（本回合軍令+1）',()=>{state.cpb.E=(state.cpb.E||0)+1;return '東軍本回合軍令+1';}],
