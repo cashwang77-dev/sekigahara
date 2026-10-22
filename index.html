@@ -246,11 +246,67 @@ button{font-family:inherit;cursor:pointer}
 @keyframes ash{0%{opacity:0;transform:translate(0,0)}10%{opacity:1}100%{opacity:0;transform:translate(60px,105vh)}}
 @keyframes ember{0%{opacity:0;transform:translate(0,0)}15%{opacity:.9}100%{opacity:0;transform:translate(-40px,-90vh)}}
 @media(prefers-reduced-motion:reduce){.nobori,.flow,#amb i,.fogc{animation:none!important}}
+
+/* ===== v4 立繪・插畫・一騎討 ===== */
+.face{flex:none;object-fit:cover;border:2px solid #5a4426;background:#efe4c9;box-shadow:0 2px 6px rgba(40,25,10,.3);border-radius:3px}
+.face.e{border-color:var(--east)} .face.w{border-color:var(--west)}
+.scene{margin:-22px -22px 14px;position:relative;overflow:hidden;aspect-ratio:16/8.4;background:#ddd0b0}
+.mcard.scroll .scene{margin:-30px -32px 14px}
+@media(max-width:500px){.mcard.scroll .scene{margin:-24px -20px 12px}}
+.scene img{width:100%;height:100%;object-fit:cover;display:block;animation:kenburns 9s ease-out both}
+.scene::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 62%,rgba(246,240,225,.95));pointer-events:none}
+@keyframes kenburns{from{transform:scale(1.08)}to{transform:scale(1)}}
+.t-key{position:relative;margin:-28px -16px 0;height:clamp(230px,44vw,440px);overflow:hidden}
+.t-key img{width:100%;height:100%;object-fit:cover;object-position:50% 60%;display:block;animation:kenburns 14s ease-out both}
+.t-key::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(236,226,201,0) 55%,var(--paper) 98%),linear-gradient(90deg,var(--paper),rgba(236,226,201,0) 8%,rgba(236,226,201,0) 92%,var(--paper))}
+.t-key+.t-head{margin-top:clamp(-90px,-8vw,-40px);position:relative;z-index:2}
+.t-key+.t-head .t-date{display:inline-block;background:rgba(236,226,201,.88);padding:2px 12px;border-radius:2px}
+.t-key+.t-head .t-main{text-shadow:0 0 18px var(--paper),0 0 30px var(--paper)}
+.side-card .pt{float:left;width:78px;height:78px;margin:0 12px 6px 0}
+.t-ach{display:inline-block;margin-left:10px}
+#cutin{position:fixed;inset:0;z-index:40;pointer-events:none;display:none;overflow:hidden}
+#cutin.show{display:block}
+#cutin .band{position:absolute;left:-10%;right:-10%;top:50%;height:min(230px,40vh);transform:translateY(-50%) skewY(-6deg);background:linear-gradient(90deg,rgba(20,14,8,.94),rgba(40,28,16,.9));border-top:3px solid var(--gold);border-bottom:3px solid var(--gold);animation:bandin 1.9s ease-in-out forwards}
+#cutin.w .band{background:linear-gradient(90deg,rgba(70,12,8,.94),rgba(30,10,6,.92))}
+#cutin.e .band{background:linear-gradient(90deg,rgba(14,24,48,.94),rgba(10,14,28,.92))}
+#cutin img{position:absolute;top:50%;left:6%;height:min(300px,52vh);width:min(300px,52vh);object-fit:cover;transform:translateY(-50%);border:3px solid var(--gold);box-shadow:0 10px 30px rgba(0,0,0,.6);animation:facein 1.9s ease-out forwards}
+#cutin .tx{position:absolute;top:50%;left:calc(6% + min(300px,52vh) + 4%);right:4%;transform:translateY(-50%);color:#f6f0e1;animation:txin 1.9s ease-out forwards}
+#cutin .sk{font-family:var(--brush);font-size:clamp(34px,7vw,72px);font-weight:700;letter-spacing:.12em;color:#f3dfa6;text-shadow:0 0 16px rgba(229,185,60,.6),3px 3px 0 #000;line-height:1.1}
+#cutin .nm{font-size:clamp(15px,2.4vw,22px);letter-spacing:.3em;margin-bottom:6px}
+#cutin .ln{font-size:clamp(14px,2.2vw,19px);margin-top:10px;font-family:var(--brush)}
+@media(max-width:600px){#cutin img{left:4%;width:110px;height:110px}#cutin .tx{left:calc(4% + 122px)}#cutin .sk{font-size:28px;letter-spacing:.04em}#cutin .band{height:190px}}
+@keyframes bandin{0%{clip-path:inset(0 100% 0 0)}14%{clip-path:inset(0 0 0 0)}82%{opacity:1}100%{opacity:0}}
+@keyframes facein{0%{opacity:0;transform:translate(-60px,-50%)}16%{opacity:1;transform:translate(0,-50%)}82%{opacity:1}100%{opacity:0}}
+@keyframes txin{0%{opacity:0;transform:translate(60px,-50%)}22%{opacity:1;transform:translate(0,-50%)}82%{opacity:1}100%{opacity:0}}
+.mcard.duel .scene{aspect-ratio:16/5}
+.duel .vs{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 8px}
+.duel .fig{flex:1;text-align:center;font-size:14px}
+.duel .fig .face{width:92px;height:92px}
+.duel .fig b{display:block;margin-top:4px;font-size:15.5px}
+.duel .vsx{font-family:var(--brush);font-size:34px;color:var(--west);font-weight:700}
+.duel .hp{height:10px;background:#d8ccb0;margin-top:5px;position:relative;overflow:hidden}
+.duel .hp i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#b3241a,#e0793e);transition:width .5s}
+.duel .tell{text-align:center;padding:8px 10px;background:#2a2118;color:#f3dfa6;font-family:var(--brush);font-size:17px;margin:8px 0}
+.duel .rr{text-align:center;font-size:14.5px;min-height:22px;margin:4px 0}
+.duel .rule{font-size:12.5px;color:var(--muted);text-align:center}
+.achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0}
+.ach{border:1.5px solid var(--line);padding:8px;font-size:12.5px;line-height:1.5;background:#fffaf0;display:flex;gap:8px;align-items:flex-start}
+.ach .sl{flex:none;width:34px;height:34px;border:2.5px solid rgba(170,30,20,.8);color:rgba(170,30,20,.9);display:grid;place-items:center;font-weight:900;font-size:13px;transform:rotate(-8deg);font-family:var(--brush)}
+.ach.off{opacity:.45} .ach.off .sl{border-color:#999;color:#999}
+.ach b{display:block;font-size:13.5px}
+.mvp{display:flex;gap:12px;align-items:center;background:#f3e8d6;padding:8px 10px;margin:10px 0;border-left:4px solid var(--gold)}
+.mvp .face{width:64px;height:64px}
+.rank{font-family:var(--brush);font-size:46px;font-weight:700;color:var(--west);line-height:1;margin-left:auto}
+.choice-btns .mbtns{flex-direction:column;align-items:stretch}
+.choice-btns .mbtns .btn,.choice-btns .mbtns .btn.go{width:100%!important;white-space:normal;text-align:left;font-size:15.5px;padding:10px 14px!important;background:#fffaf0;color:var(--ink);border:1.5px solid #5a4426;font-family:var(--brush);letter-spacing:.04em;box-shadow:none}
+.choice-btns .mbtns .btn::before{content:"▸ ";color:var(--west)}
+.choice-btns .mbtns .btn:hover{background:var(--ink)!important;color:var(--paper2)!important}
 </style>
 </head>
 <body>
 
 <section id="title">
+  <div class="t-key"><img src="img/key.jpg" alt=""></div>
   <div class="t-head">
     <div class="t-date">慶長五年九月十五日 ・ 西元一六〇〇年十月二十一日</div>
     <div class="t-main">關原<span>決戰</span></div>
@@ -260,7 +316,7 @@ button{font-family:inherit;cursor:pointer}
   <div class="sides">
     <button class="side-card e" data-side="E">
       <div class="mon" id="monE"></div>
-      <h2>東 軍</h2>
+      <img class="face e pt" src="img/p_ieyasu.webp" alt=""><h2>東 軍</h2>
       <div class="lead">總大將　德川家康</div>
       <p>兵力雄厚但身處盆地中央，西軍佔據笹尾山、天滿山、松尾山三面高地。你必須在正面強攻的同時，暗中「調略」小早川秀秋與南宮山的吉川廣家。</p>
       <p>手握「問鐵砲」：向松尾山開火逼小早川表態——但若他仍心向西軍，將弄巧成拙。</p>
@@ -268,7 +324,7 @@ button{font-family:inherit;cursor:pointer}
     </button>
     <button class="side-card w" data-side="W">
       <div class="mon" id="monW"></div>
-      <h2>西 軍</h2>
+      <img class="face w pt" src="img/p_ishida.webp" alt=""><h2>西 軍</h2>
       <div class="lead">實質主帥　石田三成</div>
       <p>布陣於高地、形成鶴翼包圍之勢，地利盡在我方。但小早川、脇坂四將與南宮山的毛利軍心意未定，必須不斷「督促」、點燃狼煙催促出陣。</p>
       <p>若能讓松尾山與南宮山同時殺下，家康將腹背受敵。</p>
@@ -283,7 +339,7 @@ button{font-family:inherit;cursor:pointer}
   </div>
   <div style="text-align:center;margin-top:16px">
     <button class="big-btn" id="startBtn" disabled>請選擇陣營</button>
-    <div style="margin-top:10px"><button class="link-btn" id="helpBtn0">遊戲說明</button></div>
+    <div style="margin-top:10px"><button class="link-btn" id="helpBtn0">遊戲說明</button><button class="link-btn t-ach" id="achBtn">戰功印章</button></div>
   </div>
   <div class="t-foot">建議開啟聲音遊玩　・　手機直向橫向皆可，地圖可左右滑動<br><a href="https://cashkingw.blogspot.com/search/label/%E9%97%9C%E5%8E%9F%E4%B9%8B%E6%88%B0" target="_blank" rel="noopener" style="color:var(--west);font-weight:700">關原之戰史實解析與攻略 →</a>　<a href="https://cashkingw.blogspot.com/" target="_blank" rel="noopener" style="color:var(--muted)">Cash城</a><div style="margin-top:12px"><a href="https://ko-fi.com/cash703856" target="_blank" rel="noopener" style="display:inline-block;padding:7px 18px;border:1.5px solid var(--gold);color:var(--ink);text-decoration:none;font-weight:700;letter-spacing:.1em;background:#fff8e6">☕ 喜歡這個遊戲？請作者喝杯咖啡</a></div></div>
 </section>
@@ -314,6 +370,7 @@ button{font-family:inherit;cursor:pointer}
   </div>
 </section>
 
+<div id="cutin"><div class="band"></div><img alt=""><div class="tx"></div></div>
 <div id="modal" class="hidden"><div class="mcard" id="mcard"></div></div>
 
 <script>
@@ -473,7 +530,8 @@ async function useSkill(u){
   const s=SK[u.id];u.skUsed=true;
   const line=s.run(u);
   log(`【絕技】${u.name}「${s.n}」！${s.d}`,'k '+u.side.toLowerCase());
-  if(!AUTO){say(u,line,true);fxText(u,'「'+s.n+'」','#b8860b');drum(.9);setTimeout(()=>drum(.7),160);if(visibleTo(u,state.player))herald(`${u.name}發動絕技「${s.n}」！`,u.side,'使番');}
+  if(!AUTO){drum(.9);setTimeout(()=>drum(.7),160);if(visibleTo(u,state.player)){roar(.6,1);await cutin(u,'「'+s.n+'」',line);}say(u,line,true);fxText(u,'「'+s.n+'」','#b8860b');}
+  if(u.id==='shimazu'&&u.side===state.player) unlock('shimazu');
   for(const e of units) if(e.state==='active'&&e.morale<=0) await checkRout(e);
   updPeak();
 }
@@ -504,7 +562,7 @@ async function doPlot(side,kind,c,r){
   }else if(kind==='fire'){
     state.fire[key(c,r)]=state.tick+3;
     log(`【火計】${SN[side]}在${LABELS.find(l=>Math.round(l[1])===c&&Math.floor(l[2])===r)?.[0]||'村落'}放火，濃煙沖天！`,'k '+side.toLowerCase());
-    if(tgt){const d=Math.round(tgt.troops*.08);tgt.troops-=d;tgt.morale-=15;state.kills[side]+=tgt.side!==side?d:0;log(`${tgt.name}隊陷入火海，折損${d.toLocaleString()}人。`,tgt.side.toLowerCase());if(!AUTO)fxText(tgt,'-'+d.toLocaleString(),'#b3241a');await checkRout(tgt);}
+    if(tgt){const d=Math.round(tgt.troops*.08);tgt.troops-=d;tgt.morale-=15;state.kills[side]+=tgt.side!==side?d:0;log(`${tgt.name}隊陷入火海，折損${d.toLocaleString()}人。`,tgt.side.toLowerCase());if(me&&tgt.side!==side)unlock('fire');if(!AUTO)fxText(tgt,'-'+d.toLocaleString(),'#b3241a');await checkRout(tgt);}
     if(!AUTO){roar(.4,.8);renderBurn();}
   }else if(kind==='ambush'){
     if(!tgt) return;
@@ -533,15 +591,32 @@ function seen(k){
 }
 /* ---- 歷史事件（每場隨機抽3） ---- */
 const EVENTS=[
-  {t:[2,3],c:()=>state.fogEnd===4,run:()=>{state.fogEnd=state.turn;return ['山風驟起','濃霧提早散去','<p>伊吹山吹下的山風捲走了濃霧，比預期更早，整個盆地已一覽無遺。</p><div class="quote">本回合結束後霧散，鐵砲可提早射擊。</div>'];}},
-  {t:[3,4],c:()=>state.fogEnd===4,run:()=>{state.fogEnd=5;return ['霧遲遲不散','巳刻仍是白茫茫一片','<p>濃霧比預期更持久。鐵砲隊只能焦急地等待。</p><div class="quote">霧將延長到第5回合。</div>'];}},
-  {t:[3,6],c:()=>!state.nanguDone,run:()=>{state.D=clamp(state.D-15,0,100);return ['吉川的密使','南宮山 出陣度 -15','<p>吉川廣家的家臣悄悄來到黑田長政陣中：「毛利家絕不出兵，請內府放心。」</p>',U('kikkawa')];}},
-  {t:[5,8],c:()=>!state.nanguDone,run:()=>{state.D=clamp(state.D+15,0,100);return ['毛利秀元的焦躁','南宮山 出陣度 +15','<p>聽著山下震天的殺聲，年輕的毛利秀元再也坐不住了：「吉川，為何還不出兵！」</p>',U('mori')];}},
+  {t:[2,3],c:()=>state.fogEnd===4,run:()=>{state.fogEnd=state.turn;return ['山風驟起','濃霧提早散去','<p>伊吹山吹下的山風捲走了濃霧，比預期更早，整個盆地已一覽無遺。</p><div class="quote">本回合結束後霧散，鐵砲可提早射擊。</div>',null,'fog'];}},
+  {t:[3,4],c:()=>state.fogEnd===4,run:()=>{state.fogEnd=5;return ['霧遲遲不散','巳刻仍是白茫茫一片','<p>濃霧比預期更持久。鐵砲隊只能焦急地等待。</p><div class="quote">霧將延長到第5回合。</div>',null,'fog'];}},
+  {t:[3,6],c:()=>!state.nanguDone,run:()=>['吉川的密使','南宮山的內應','<p>吉川廣家的家臣悄悄來到黑田長政陣中：「毛利家絕不出兵，請內府放心。」</p>',U('kikkawa'),null,{side:'E',ai:0,opts:[
+    ['接受承諾',()=>{state.D=clamp(state.D-15,0,100);return '吉川的承諾已收下。南宮山 出陣度 -15';}],
+    ['要求交出人質（賭一把）',()=>{if(Math.random()<.65){state.D=clamp(state.D-30,0,100);return '吉川交出了人質。南宮山 出陣度 -30';}state.D=clamp(state.D+10,0,100);return '吉川大怒：「內府信不過毛利家？」南宮山 出陣度 +10';}]]}]},
+  {t:[5,8],c:()=>!state.nanguDone,run:()=>['毛利秀元的焦躁','南宮山的催促','<p>聽著山下震天的殺聲，年輕的毛利秀元再也坐不住了：「吉川，為何還不出兵！」他派使者飛馳到笹尾山，請求石田三成點起狼煙。</p>',U('mori'),'mori',{side:'W',ai:-1,opts:[
+    ['連燃三道狼煙（下回合軍令-1）',()=>{state.D=clamp(state.D+25,0,100);state.cpb.W=(state.cpb.W||0)-1;return '笹尾山狼煙沖天！南宮山 出陣度 +25';}],
+    ['先靜觀其變',()=>{state.D=clamp(state.D+10,0,100);return '秀元按捺著怒氣等待。南宮山 出陣度 +10';}]]}]},
   {t:[6,10],c:()=>U('otani').state==='active',run:()=>{const o=U('otani');o.morale-=20;buff(o,{atk:.85},4);return ['大谷病情惡化','大谷吉繼 士氣-20、攻擊-15%（兩回合）','<p>大谷吉繼的病已經讓他看不見了。他坐在轎中，聽著戰況指揮，咳嗽卻越來越重。</p>',o];}},
-  {t:[1,3],c:()=>U('fukushima').state==='active',run:()=>{buff(U('fukushima'),{atk:1.15},3);U('ii').morale=Math.min(100,U('ii').morale+10);return ['爭奪先鋒','福島正則 攻擊+15%（兩回合）、井伊直政 士氣+10','<p>被井伊直政搶走先鋒的福島正則勃然大怒：「先鋒是我福島的！」全隊怒吼著衝向宇喜多。</p>',U('fukushima')];}},
-  {t:[8,11],c:()=>!state.kobaDone,run:()=>{state.L=Math.round(state.L+(52-state.L)*.5);return ['金吾的猶豫','小早川去就向中間靠攏','<p>松尾山上，十九歲的小早川秀秋來回踱步。東西兩軍的使者都在帳外等候，他卻遲遲無法下令。</p>',U('koba')];}},
-  {t:[6,10],c:()=>U('shimazu').state==='active'&&U('shimazu').side==='W',run:()=>{buff(U('shimazu'),{lock:1},4);return ['島津拒絕出兵','島津義弘 兩回合按兵不動','<p>石田三成的使者騎馬到島津陣前催促出擊，島津豐久怒斥：「戰場上下馬傳令才是禮數！各自為戰，休要多言！」</p><div class="quote">「靠近者，不論敵我，一律射殺。」</div>',U('shimazu')];}},
-  {t:[7,11],c:()=>U('ieyasu').state==='active'&&!state.kobaDone,run:()=>{state.cpb.E=(state.cpb.E||0)+1;return ['家康咬指甲','東軍本回合軍令+1','<p>小早川遲遲不動，家康焦躁地咬著指甲：「那個小毛頭……再派使者！」</p>',U('ieyasu')];}},
+  {t:[1,3],c:()=>U('fukushima').state==='active',run:()=>['爭奪先鋒','福島正則的怒火','<p>被井伊直政搶走先鋒的福島正則勃然大怒：「先鋒是我福島的！」他的使番衝進本陣，要求立刻全軍突擊。</p>',U('fukushima'),null,{side:'E',ai:0,opts:[
+    ['准許福島猛攻',()=>{const f=U('fukushima');buff(f,{atk:1.2},3);f.morale=Math.min(100,f.morale+10);return '福島隊攻擊+20%（兩回合）、士氣+10';}],
+    ['命其聽從軍令',()=>{const f=U('fukushima');f.morale-=8;units.forEach(u=>{if(u.side==='E'&&u.state==='active'&&FRONT_E.includes(u.id)&&u!==f)u.morale=Math.min(100,u.morale+6);});return '福島隊士氣-8，但前線各隊士氣+6，陣形井然';}]]}]},
+  {t:[8,11],c:()=>!state.kobaDone,run:()=>{state.L=Math.round(state.L+(52-state.L)*.5);const E=state.player==='E';return ['金吾的使者','小早川去就向中間靠攏','<p>松尾山上，十九歲的小早川秀秋來回踱步。他派出的使者來到你的本陣，吞吞吐吐地探問：「若金吾殿……有所決斷，將以何為報？」</p>',U('koba'),null,{side:state.player,ai:0,opts:E?[
+    ['許以加封兩國',()=>{state.L=clamp(state.L-12,0,100);return '使者喜形於色地回山。小早川去就 -12';}],
+    ['威嚇：「再不動，就踏平松尾山！」',()=>{if(Math.random()<.5){state.L=clamp(state.L-22,0,100);return '秀秋嚇得臉色發白。小早川去就 -22';}state.L=clamp(state.L+10,0,100);return '秀秋感到受辱。小早川去就 +10';}]]:[
+    ['許以關白之位與兩國',()=>{state.L=clamp(state.L+12,0,100);return '使者恭敬地退下。小早川去就 +12';}],
+    ['斥其首鼠兩端',()=>{if(Math.random()<.5){state.L=clamp(state.L+20,0,100);return '秀秋羞愧難當，決意履行盟約。小早川去就 +20';}state.L=clamp(state.L-12,0,100);return '秀秋懷恨在心。小早川去就 -12';}]]}];}},
+  {t:[6,10],c:()=>U('shimazu').state==='active'&&U('shimazu').side==='W',run:()=>['島津拒絕出兵','島津義弘按兵不動','<p>石田三成的使者騎馬到島津陣前催促出擊，島津豐久怒斥：「戰場上下馬傳令才是禮數！各自為戰，休要多言！」</p><div class="quote">「靠近者，不論敵我，一律射殺。」</div>',U('shimazu'),null,{side:'W',ai:1,opts:[
+    ['三成親自下馬懇請（下回合軍令-1）',()=>{state.cpb.W=(state.cpb.W||0)-1;const sz=U('shimazu');if(Math.random()<.55){sz.morale=Math.min(100,sz.morale+15);buff(sz,{atk:1.15},3);return '義弘：「……看在治部下馬的份上。」島津隊士氣+15、攻擊+15%';}buff(sz,{lock:1},2);return '豐久冷冷回絕。島津隊仍按兵不動（一回合）';}],
+    ['隨他去吧',()=>{buff(U('shimazu'),{lock:1},4);return '島津隊兩回合按兵不動';}]]}]},
+  {t:[4,8],c:()=>!state.kobaDone&&U('otani').state==='active',run:()=>['大谷的請求','刑部少輔的密報','<p>大谷吉繼派人送來密信：「金吾中納言陣中往來的使者太多了。請分兵監視松尾山，以防萬一。」</p>',U('otani'),null,{side:'W',ai:-1,opts:[
+    ['分兵監視松尾山（下回合軍令-1）',()=>{state.cpb.W=(state.cpb.W||0)-1;state.F=clamp(state.F+15,0,100);state.L=clamp(state.L+6,0,100);return '四將不敢妄動。脇坂四將 +15、小早川去就 +6';}],
+    ['兵力吃緊，婉拒',()=>{U('otani').morale-=10;state.F=clamp(state.F-5,0,100);return '大谷嘆了口氣。大谷隊士氣-10、四將 -5';}]]}]},
+  {t:[7,11],c:()=>U('ieyasu').state==='active'&&!state.kobaDone,run:()=>['家康咬指甲','內府的焦躁','<p>小早川遲遲不動，家康焦躁地咬著指甲：「那個小毛頭……！」</p>',U('ieyasu'),null,{side:'E',ai:0,opts:[
+    ['再派使者（本回合軍令+1）',()=>{state.cpb.E=(state.cpb.E||0)+1;return '東軍本回合軍令+1';}],
+    ['親自上前線督戰',()=>{const ie=U('ieyasu');allies(ie,3).forEach(a=>a.morale=Math.min(100,a.morale+12));return '家康周圍3格的友軍士氣+12';}]]}]},
 ];
 
 
@@ -550,7 +625,7 @@ function newGame(side,diff){
     morale:x.group?100:90,state:x.group?'waver':'active',fort:sd==='W'&&!x.group,group:x.group||null,cmd:!!x.cmd,role:x.role||'adv',trait:x.trait||'',moved:false,attacked:false,said:0,st:'n',bf:null,skUsed:false,hid:false}));
   state={player:side,diff,turn:1,phase:'E',cp:{E:3,W:3},L:50,F:45,D:20,kobaDone:false,kobaRes:null,nanguDone:false,nanguRes:null,
     teppo:false,kills:{E:0,W:0},peak:{E:0,W:0},over:false,log:[],events:[],
-    tick:0,fogEnd:4,fire:{},scout:{},eyes:{},cpb:{},plan:{E:'steady',W:'hold'},evq:[...EVENTS].sort(()=>Math.random()-.5).slice(0,3)};
+    tick:0,fogEnd:4,fire:{},scout:{},eyes:{},cpb:{},plan:{E:'steady',W:'hold'},evq:EVENTS.map(e=>({...e})).sort(()=>Math.random()-.5).slice(0,4),dw:{},newAch:[]};
   updPeak();
 }
 const isAI=s=>AUTO||s!==state.player;
@@ -645,6 +720,74 @@ function crest(kind,ch,size=56,col='#2a2118',bg='#f6f0e1'){
   return `<svg viewBox="-50 -50 100 100" width="${size}" height="${size}" style="flex:none"><circle r="49" fill="${bg}"/>${g}</svg>`;
 }
 const crestOf=(u,size)=>crest(CREST[u.id]||'char',u.short,size);
+/* ================= v4 立繪・插畫 ================= */
+const PORT=['ieyasu','honda','ii','fukushima','kuroda','hosokawa','todo','masanobu','ishida','sakon','otani','shimazu','ukita','koba','kikkawa','mori'];
+const SCENES=['fog','betray','teppo','bento','otani','shimazu','winE','winW','council','sakon','duel','mori'];
+const face=(id,size,side)=>`<img class="face ${(side||'').toLowerCase()}" src="img/p_${id}.webp" style="width:${size}px;height:${size}px" alt="">`;
+const faceOf=(u,size)=>u&&PORT.includes(u.id)?face(u.id,size,u.side):crestOf(u,size);
+const sceneImg=n=>n?`<div class="scene"><img src="img/e_${n}.jpg" alt=""></div>`:'';
+if(!AUTO) window.addEventListener('load',()=>setTimeout(()=>[...PORT.map(i=>`img/p_${i}.webp`),...SCENES.map(n=>`img/e_${n}.jpg`)].forEach(s=>{const i=new Image();i.src=s;}),800));
+async function cutin(u,title,line){
+  if(AUTO||!u) return;
+  const c=document.getElementById('cutin'),im=c.querySelector('img'),tx=c.querySelector('.tx');
+  const has=PORT.includes(u.id);im.style.display=has?'':'none';if(has)im.src=`img/p_${u.id}.webp`;
+  tx.style.left=has?'':'6%';
+  tx.innerHTML=`<div class="nm">${u.name}</div><div class="sk">${title}</div>${line?`<div class="ln">「${line}」</div>`:''}`;
+  c.className='show '+u.side.toLowerCase();
+  c.querySelectorAll('.band,img,.tx').forEach(e=>{e.style.animation='none';void e.offsetWidth;e.style.animation='';});
+  await new Promise(r=>setTimeout(r,1950));c.className='';
+}
+/* ---- 一騎討 ---- */
+const DUEL={honda:[98,'a'],ii:[88,'a'],fukushima:[90,'a'],kuroda:[76,'f'],hosokawa:[84,'a'],todo:[80,'f'],ieyasu:[68,'d'],ishida:[62,'f'],sakon:[95,'a'],otani:[70,'d'],shimazu:[92,'d'],ukita:[86,'a'],koba:[60,'d'],kikkawa:[72,'d'],mori:[76,'a']};
+const MV={a:{n:'猛攻',b:'f'},d:{n:'格擋',b:'a'},f:{n:'虛招',b:'d'}};
+const TELL={a:['（握緊長槍，殺氣騰騰）','：「接招！」','（踏前一步，蓄勢待發）'],d:['（沉腰穩守，紋絲不動）','：「放馬過來。」','（雙手持刀，護住要害）'],f:['（眼神飄忽，腳步虛浮）','（嘴角微揚，似有詭計）','（刀尖輕晃，忽左忽右）']};
+const canDuel=(a,d)=>!!DUEL[a.id]&&!!DUEL[d.id]&&!a.dueled&&!d.dueled&&a.state==='active'&&d.state==='active'&&hdist(a,d)===1;
+const duelPick=id=>Math.random()<.5?DUEL[id][1]:pick(['a','d','f'].filter(x=>x!==DUEL[id][1]));
+function duelHTML(A,B,hp,rd,tell,msg){
+  const fig=u=>`<div class="fig">${faceOf(u,92)}<b style="color:${u.side==='E'?'var(--east)':'var(--west)'}">${u.name}</b>武力 ${DUEL[u.id][0]}<div class="hp"><i style="width:${Math.max(0,hp[u.id])}%"></i></div></div>`;
+  return `${sceneImg('duel')}<h2>一騎討</h2><div class="mt">${rd>5?'勝負已分':`第 ${rd} 合・先削盡對方氣力者勝（最多五合）`}</div><div class="vs">${fig(A)}<div class="vsx">對</div>${fig(B)}</div><div class="rr">${msg||'兩軍停下了腳步，屏息注視著兩位大將。'}</div>${tell?`<div class="tell">${B.name}${tell}</div><div class="rule">猛攻破虛招・虛招破格擋・格擋破猛攻（反擊傷害+20%）。對手的架勢約七成可信。</div>`:''}`;
+}
+async function duel(att,def){
+  att.dueled=def.dueled=true;
+  const P=state.player,me=AUTO?null:att.side===P?att:def.side===P?def:null;
+  const A=me||att,B=A===att?def:att,hp={[A.id]:100,[B.id]:100},pa=DUEL[A.id][0],pb=DUEL[B.id][0];
+  log(`【一騎討】${att.name}向${def.name}發起一騎討！`,'k '+att.side.toLowerCase());
+  if(!AUTO){roar(.9,1.4);say(att,`${def.name}！與我一決勝負！`,true);await sleep(700);}
+  let msg='',rd=1;
+  while(hp[A.id]>0&&hp[B.id]>0&&rd<=5){
+    const mb=duelPick(B.id);
+    const ma=me?await modal(duelHTML(A,B,hp,rd,pick(TELL[Math.random()<.7?mb:pick(['a','d','f'].filter(x=>x!==mb))]),msg),[['猛攻','a'],['格擋','d'],['虛招','f']],'scroll duel'):duelPick(A.id);
+    let da=0,db=0;
+    if(ma===mb){da=Math.round(8*pb/pa+rand(0,4));db=Math.round(8*pa/pb+rand(0,4));msg=`雙方皆出${MV[ma].n}，刀槍相擊，各有損傷。`;}
+    else if(MV[ma].b===mb){db=Math.round(Math.max(12,26+(pa-pb)*.45+rand(0,8))*(ma==='d'?1.2:1));msg=`<b>${A.name}</b>以${MV[ma].n}破了${B.name}的${MV[mb].n}！`;}
+    else{da=Math.round(Math.max(12,26+(pb-pa)*.45+rand(0,8))*(mb==='d'?1.2:1));msg=`<b>${B.name}</b>以${MV[mb].n}破了${A.name}的${MV[ma].n}！`;}
+    hp[A.id]-=da;hp[B.id]-=db;rd++;
+    if(!AUTO){clash();if(me)await sleep(150);}
+  }
+  const win=hp[A.id]===hp[B.id]?(pa>=pb?A:B):hp[A.id]>hp[B.id]?A:B,lose=win===A?B:A;
+  const d=Math.round(lose.troops*.06);lose.troops-=d;lose.morale-=35;win.morale=Math.min(100,win.morale+20);
+  state.kills[win.side]+=d;win.dealt=(win.dealt||0)+d;state.dw[win.side]=(state.dw[win.side]||0)+1;
+  log(`【一騎討】${win.name}擊敗${lose.name}！${lose.name}隊士氣大挫（-35），折損${d.toLocaleString()}人。`,'k '+win.side.toLowerCase());
+  if(!AUTO){roar(1,1.6);shake();fxText(lose,'一騎討 敗','#b3241a');fxText(win,'一騎討 勝','#b8860b');
+    if(me) await modal(duelHTML(A,B,hp,6,'',`${msg}<br><b style="font-size:17px;color:${win===me?'var(--ok)':'var(--bad)'}">${win.name} 勝！</b>　${lose.name}隊士氣 -35、兵力 -${d.toLocaleString()}；${win.name}隊士氣 +20`),[['回到戰場',1]],'scroll duel');
+    say(win,pick(['勝負已分！','還差得遠呢。','這就是我的武勇！']),true);renderUnits();}
+  if((state.dw[P]||0)>=2) unlock('duel');
+  await checkRout(lose);
+  updPeak();
+  return win;
+}
+/* ---- 戰功印章 ---- */
+const ACH=[['histE','史實重現','以東軍獲勝，且小早川倒戈東軍'],['teppo','問鐵砲','以「問鐵砲」逼小早川倒戈'],['honda','五十七戰無傷','以東軍獲勝，且本多忠勝未曾潰走'],['winW','逆轉關原','以西軍獲勝'],['sakon','鬼左近健在','以西軍獲勝，且島左近未曾潰走'],['kobaW','金吾之義','讓小早川秀秋投入西軍'],['mori','毛利出陣','讓南宮山的毛利軍殺下山'],['fast','速戰速決','在午刻（第9回合）以前獲勝'],['hard','天下人','以「天下人」難度獲勝'],['duel','一騎當千','一場之中贏得兩次一騎討'],['shimazu','島津的退口','親自指揮島津義弘發動「捨奸」'],['fire','火攻','以火計重創敵軍部隊']];
+function achGet(){try{return JSON.parse(localStorage.getItem('sekiAch')||'{}');}catch(e){return {};}}
+function unlock(id){
+  if(AUTO||!state) return;
+  const h=achGet();if(h[id]) return;
+  h[id]=Date.now();try{localStorage.setItem('sekiAch',JSON.stringify(h));}catch(e){}
+  const a=ACH.find(x=>x[0]===id);state.newAch.push(id);
+  herald(`獲得戰功印章「${a[1]}」——${a[2]}`,state.player,'戰功');
+}
+function achHTML(){const h=achGet();return `<div class="achs">${ACH.map(([id,n,d])=>`<div class="ach${h[id]?'':' off'}"><div class="sl">${h[id]?'功':'？'}</div><div><b>${n}</b>${d}</div></div>`).join('')}</div>`;}
+function achCount(){const h=achGet();return ACH.filter(a=>h[a[0]]).length;}
 
 /* ================= SVG ================= */
 const svg=document.getElementById('map');
@@ -885,7 +1028,7 @@ function renderInfo(){
   const u=sel;
   const t=terr(u.c,u.r),tn=ROAD.has(key(u.c,u.r))&&t==='p'?'街道':TER[t].n;
   const mine=u.side===state.player&&u.state==='active'&&state.phase===state.player&&!busy;
-  let h=`<div class="uhead">${crestOf(u,46)}<div><div class="nm">${u.name}${u.cmd?' ★':''}</div><div class="sd">${u.state==='active'?SN[u.side]:'名義西軍'}${u.defected?'（倒戈）':''}・${unitStatus(u)}</div></div></div>`;
+  let h=`<div class="uhead">${faceOf(u,58)}<div><div class="nm">${u.name}${u.cmd?' ★':''}</div><div class="sd">${u.state==='active'?SN[u.side]:'名義西軍'}${u.defected?'（倒戈）':''}・${unitStatus(u)}</div></div></div>`;
   h+=`<dl class="kv"><dt>兵種</dt><dd>${utBadge(utype(u))} <b>${UT[utype(u)].full}</b>${u.cmd?'・本陣':''}<div style="font-size:12.5px;color:var(--muted)">${UT[utype(u)].d}</div></dd><dt>兵力</dt><dd>${u.troops.toLocaleString()} / ${u.max.toLocaleString()}<div class="meter"><b style="width:${u.troops/u.max*100}%;background:#7fb069"></b></div></dd>`;
   h+=`<dt>士氣</dt><dd>${Math.round(u.morale)}<div class="meter"><b style="width:${clamp(u.morale,0,100)}%;background:#d6a93a"></b></div></dd>`;
   h+=`<dt>攻／防</dt><dd>${u.atk.toFixed(2)} ／ ${u.def.toFixed(2)}</dd><dt>機動</dt><dd>${u.mov}${u.gun?`　鐵砲射程 ${u.gun}`:''}</dd>`;
@@ -897,7 +1040,7 @@ function renderInfo(){
   if(pend&&mine){
     const tg=TG.find(x=>x.e===pend);
     if(tg){const p=calc(u,pend,tg.ranged,false);
-      h+=`<div class="preview"><b>${tg.ranged?'鐵砲射擊':'突擊'} → ${pend.name}</b>（兵${pend.troops.toLocaleString()}・士氣${Math.round(pend.morale)}・${ST[pend.st||'n'].n}）<br>預估造成約 <b style="color:var(--bad)">${p.dd.toLocaleString()}</b> 傷亡，我方承受約 <b>${p.da.toLocaleString()}</b>${p.flank?`<br>夾擊加成 +${p.flank*12}%`:''}${p.mu>1?`<br><b style="color:var(--ok)">兵種相剋 ×${p.mu}</b>`:p.mu<1?`<br><b style="color:var(--bad)">兵種不利 ×${p.mu}</b>`:''}<div class="btnrow"><button class="btn red" id="atkBtn">攻擊！</button><button class="btn" id="cancelAtk">取消</button></div></div>`;}
+      h+=`<div class="preview"><b>${tg.ranged?'鐵砲射擊':'突擊'} → ${pend.name}</b>（兵${pend.troops.toLocaleString()}・士氣${Math.round(pend.morale)}・${ST[pend.st||'n'].n}）<br>預估造成約 <b style="color:var(--bad)">${p.dd.toLocaleString()}</b> 傷亡，我方承受約 <b>${p.da.toLocaleString()}</b>${p.flank?`<br>夾擊加成 +${p.flank*12}%`:''}${p.mu>1?`<br><b style="color:var(--ok)">兵種相剋 ×${p.mu}</b>`:p.mu<1?`<br><b style="color:var(--bad)">兵種不利 ×${p.mu}</b>`:''}<div class="btnrow"><button class="btn red" id="atkBtn">攻擊！</button>${!tg.ranged&&canDuel(u,pend)?'<button class="btn red" id="duelBtn" title="兩位大將單挑，敗者部隊士氣-35">一騎討！</button>':''}<button class="btn" id="cancelAtk">取消</button></div></div>`;}
   }
   if(mine) h+=`<div class="btnrow"><button class="btn" id="rallyBtn" ${state.cp[state.player]<1||u.morale>=100?'disabled':''}>激勵（軍令1）士氣+25</button><button class="btn" id="desel">取消選取</button></div>`;
   else h+=`<div class="btnrow"><button class="btn" id="desel">關閉</button></div>`;
@@ -905,6 +1048,7 @@ function renderInfo(){
   const q=id=>document.getElementById(id);
   q('desel').onclick=()=>{sel=null;pend=null;R=new Map();TG=[];renderAll();};
   if(q('atkBtn')) q('atkBtn').onclick=()=>playerAttack(pend);
+  if(q('duelBtn')) q('duelBtn').onclick=()=>playerDuel(pend);
   if(q('cancelAtk')) q('cancelAtk').onclick=()=>{pend=null;renderAll();};
   if(q('rallyBtn')) q('rallyBtn').onclick=()=>{rally(u,state.player);renderAll();};
   if(q('skBtn')) q('skBtn').onclick=async()=>{if(busy)return;busy=true;await useSkill(u);busy=false;if(state.over)return;if(u.state==='active')selectUnit(u);else{sel=null;renderAll();}};
@@ -957,9 +1101,9 @@ function log(m,c){state.log.push({t:timeStr(Math.min(state.turn,16)),m,c});if(!A
 
 /* ---- 軍師進言 ---- */
 function advisor(){
-  if(state.player==='E') return {n:'本多正信',t:'德川家謀臣',c:crest('char','正',48)};
+  if(state.player==='E') return {n:'本多正信',t:'德川家謀臣',c:face('masanobu',54,'E')};
   const s=U('sakon');
-  return s&&s.state==='active'?{n:'島左近',t:'石田家首席家老',c:crest('char','左',48)}:{n:'蒲生郷舍',t:'石田家家老',c:crest('char','蒲',48)};
+  return s&&s.state==='active'?{n:'島左近',t:'石田家首席家老',c:face('sakon',54,'W')}:{n:'蒲生郷舍',t:'石田家家老',c:crest('char','蒲',48)};
 }
 function adviceLines(){
   const P=state.player,E=P==='E',L=[];
@@ -1013,10 +1157,10 @@ function modal(html,btns=[['確定',true]],cls=''){
     c.querySelectorAll('[data-i]').forEach(x=>x.onclick=()=>{m.classList.add('hidden');res(btns[+x.dataset.i][1]);});
   });
 }
-function evt(title,sub,body,who,seal){
+function evt(title,sub,body,who,seal,img,btns){
   state.events.push(`${timeStr(Math.min(state.turn,16))}　${title}`);
-  const head=who?`<div class="mhead">${crestOf(who,64)}<div><h2>${title}</h2><div class="mt" style="margin:0">${sub}</div></div></div>`:`<h2>${title}</h2><div class="mt">${sub}</div>`;
-  return modal(head+body+(seal?`<div class="seal">${seal}</div>`:''),[['確定',true]],'scroll');
+  const head=who?`<div class="mhead">${faceOf(who,72)}<div><h2>${title}</h2><div class="mt" style="margin:0">${sub}</div></div></div>`:`<h2>${title}</h2><div class="mt">${sub}</div>`;
+  return modal(sceneImg(img)+head+body+(seal&&!img?`<div class="seal">${seal}</div>`:''),btns||[['確定',true]],'scroll'+(btns?' choice-btns':''));
 }
 
 /* ================= 聲音（全部即時合成） ================= */
@@ -1162,7 +1306,7 @@ async function attack(att,def,ranged,amb){
     else{clash();await lunge(att,def);fxSpark(att,def);}
     if(def.side===state.player&&isAI(att.side)&&Date.now()-lastHerald>2500){lastHerald=Date.now();herald(`報——！${att.name}隊${ranged?'正以鐵砲射擊':'猛攻'}我軍${def.name}隊！`,def.side);}
   }
-  def.troops-=p.dd;att.troops-=p.da;
+  def.troops-=p.dd;att.troops-=p.da;att.dealt=(att.dealt||0)+p.dd;def.dealt=(def.dealt||0)+p.da;
   state.kills[att.side]+=p.dd;state.kills[def.side]+=p.da;
   def.morale-=(moraleLoss(p.dd,dt0,1.7)+(ranged?1.5:3)+(wasHid?10:0))*(def.id==='shimazu'?0.5:1)*(bf(att,'mor')||1);
   att.morale-=moraleLoss(p.da,at0,1.5)+(ranged?0:1);
@@ -1194,7 +1338,7 @@ async function checkRout(u){
         shimazu:'島津隊殘兵向敵陣正面突破而去——「島津的退口」。義弘在家臣以身殉主的掩護下，殺出一條血路。',fukushima:'東軍先鋒福島隊潰走！',
         honda:'本多忠勝的傳說，竟在今日終結……',mori:'毛利大軍潰散。',koba:'小早川隊潰散。',ii:'井伊赤備被擊退，直政負傷！',sakon:'島左近身中鐵砲，壯烈戰死。笹尾山失去了最強的守護者。'};
       const poem=POEM[u.id]?`<div class="poem"><div class="jp">${POEM[u.id].jp}</div><div class="zh">${POEM[u.id].zh}</div></div>`:'';
-      await evt(`${u.name} 潰走`,SN[u.side]+'損失一支部隊',`<p>${lines[u.id]||`${u.name}隊兵力折損、軍心潰散，已無法再戰。`}</p>${poem}`,u,u.id==='otani'?'辭世':null);
+      await evt(`${u.name} 潰走`,SN[u.side]+'損失一支部隊',`<p>${lines[u.id]||`${u.name}隊兵力折損、軍心潰散，已無法再戰。`}</p>${poem}`,u,u.id==='otani'?'辭世':null,{otani:'otani',shimazu:'shimazu',sakon:'sakon'}[u.id]);
     }
     if(!state.over){const s=u.side;if(sideStr(s,true)<state.peak[s]*0.35) await gameOver(other(s),'collapse');}
   }
@@ -1244,15 +1388,17 @@ async function kobaDecide(to,why){
     units.forEach(u=>{if(u.state==='active'&&u.side==='W'&&!u.defected)u.morale=Math.max(5,u.morale-20);if(u.state==='active'&&u.side==='E')u.morale=Math.min(100,u.morale+10);});
     log(`【倒戈】小早川秀秋一萬五千大軍殺下松尾山，矛頭直指大谷吉繼！${fd?'脇坂、朽木、小川、赤座四將隨之倒戈！':'四將仍守西軍。'}`,'k e');
     updIntensity();
-    if(!AUTO){renderUnits();horn();roar(1.2,2.2);shake();say(k,'……目標，大谷刑部！',true);const o=U('otani');if(o&&o.state==='active')setTimeout(()=>say(o,'金吾……果然是你。',true),900);await sleep(1700);}
-    await evt('小早川秀秋 倒戈！',why==='teppo'?'問鐵砲奏效':'松尾山的決斷',`<p>${why==='teppo'?'德川本陣向松尾山開火。驚惶的秀秋終於下令：「目標，大谷刑部！」':'松尾山上的旗幟動了——一萬五千兵如雪崩般衝下山坡，攻擊的卻是西軍的大谷隊。'}</p>${fd?'<p>山麓的脇坂、朽木、小川、赤座四將見狀，也一併調轉槍口。</p>':'<p>但脇坂等四將在大谷的安撫下仍堅守西軍，擋在小早川面前。</p>'}<div class="quote">西軍全軍士氣 −20，東軍士氣 +10</div>`,k,'倒戈');
+    if(!AUTO){renderUnits();horn();roar(1.2,2.2);shake();await cutin(k,'倒 戈','目標，大谷刑部！');say(k,'……目標，大谷刑部！',true);const o=U('otani');if(o&&o.state==='active')setTimeout(()=>say(o,'金吾……果然是你。',true),900);await sleep(1200);}
+    if(why==='teppo'&&state.player==='E') unlock('teppo');
+    await evt('小早川秀秋 倒戈！',why==='teppo'?'問鐵砲奏效':'松尾山的決斷',`<p>${why==='teppo'?'德川本陣向松尾山開火。驚惶的秀秋終於下令：「目標，大谷刑部！」':'松尾山上的旗幟動了——一萬五千兵如雪崩般衝下山坡，攻擊的卻是西軍的大谷隊。'}</p>${fd?'<p>山麓的脇坂、朽木、小川、赤座四將見狀，也一併調轉槍口。</p>':'<p>但脇坂等四將在大谷的安撫下仍堅守西軍，擋在小早川面前。</p>'}<div class="quote">西軍全軍士氣 −20，東軍士氣 +10</div>`,k,'倒戈',why==='teppo'?'teppo':'betray');
   }else{
     four.forEach(u=>{u.state='active';u.moved=u.attacked=false;});
     units.forEach(u=>{if(u.state==='active'&&u.side==='E')u.morale=Math.max(5,u.morale-15);if(u.state==='active'&&u.side==='W')u.morale=Math.min(100,u.morale+10);});
     log('【參戰】小早川秀秋決意履行盟約，松尾山大軍殺向東軍！','k w');
     updIntensity();
-    if(!AUTO){renderUnits();horn();roar(1.2,2.2);shake();say(k,'目標，德川本陣！全軍下山！',true);await sleep(1500);}
-    await evt('小早川秀秋 投入西軍！',why==='teppo'?'問鐵砲弄巧成拙':'松尾山的決斷',`<p>${why==='teppo'?'德川的鐵砲激怒了秀秋：「內府竟敢以鐵砲相逼！」':'秀秋終究無法背棄豐臣家的恩義。'}松尾山一萬五千兵與山麓四將一同殺向東軍側翼！</p><div class="quote">東軍全軍士氣 −15，西軍士氣 +10</div>`,k,'參戰');
+    if(!AUTO){renderUnits();horn();roar(1.2,2.2);shake();await cutin(k,'參 戰','目標，德川本陣！全軍下山！');say(k,'目標，德川本陣！全軍下山！',true);await sleep(800);}
+    if(state.player==='W') unlock('kobaW');
+    await evt('小早川秀秋 投入西軍！',why==='teppo'?'問鐵砲弄巧成拙':'松尾山的決斷',`<p>${why==='teppo'?'德川的鐵砲激怒了秀秋：「內府竟敢以鐵砲相逼！」':'秀秋終究無法背棄豐臣家的恩義。'}松尾山一萬五千兵與山麓四將一同殺向東軍側翼！</p><div class="quote">東軍全軍士氣 −15，西軍士氣 +10</div>`,k,'參戰','betray');
   }
   updPeak();
   if(!AUTO){renderAll();renderAdvisor(true);}
@@ -1266,13 +1412,14 @@ async function nanguDecide(to){
     units.forEach(u=>{if(u.state==='active'&&u.side==='E')u.morale=Math.max(5,u.morale-10);});
     log('【出陣】南宮山狼煙回應！毛利、長宗我部大軍自家康背後殺來！','k w');
     updIntensity();
-    if(!AUTO){renderUnits();horn();roar(1,2);shake();say(U('mori'),'吉川，讓開！毛利出陣！',true);await sleep(1400);}
-    await evt('毛利軍 殺下南宮山！','吉川廣家無法再拖延',`<p>吉川廣家終究拗不過毛利秀元與安國寺惠瓊的催促，南宮山三萬大軍傾巢而出，出現在東軍後方。</p><div class="quote">東軍全軍士氣 −10。池田、淺野、山內必須迎擊！</div>`,U('mori'),'出陣');
+    if(!AUTO){renderUnits();horn();roar(1,2);shake();await cutin(U('mori'),'出 陣','吉川，讓開！毛利出陣！');say(U('mori'),'吉川，讓開！毛利出陣！',true);await sleep(800);}
+    if(state.player==='W') unlock('mori');
+    await evt('毛利軍 殺下南宮山！','吉川廣家無法再拖延',`<p>吉川廣家終究拗不過毛利秀元與安國寺惠瓊的催促，南宮山三萬大軍傾巢而出，出現在東軍後方。</p><div class="quote">東軍全軍士氣 −10。池田、淺野、山內必須迎擊！</div>`,U('mori'),'出陣','mori');
   }else{
     g.forEach(u=>u.state='out');
     log('【不戰】吉川廣家堵住山道，聲稱「正在用便當」。毛利軍終日未動。','k e');
     if(!AUTO){renderUnits();say(U('kikkawa'),'……將士正在用便當。',true);await sleep(1400);}
-    await evt('「宰相殿的空便當」','南宮山按兵不動',`<p>毛利秀元屢次派人催問，吉川廣家只回答：「將士正在用餐。」毛利一族三萬大軍就此困守南宮山，不發一兵。</p><p>東軍後衛池田、淺野、山內得以轉向主戰場。</p>`,U('kikkawa'),'不戰');
+    await evt('「宰相殿的空便當」','南宮山按兵不動',`<p>毛利秀元屢次派人催問，吉川廣家只回答：「將士正在用餐。」毛利一族三萬大軍就此困守南宮山，不發一兵。</p><p>東軍後衛池田、淺野、山內得以轉向主戰場。</p>`,U('kikkawa'),'不戰','bento');
   }
   updPeak();
   if(!AUTO){renderAll();renderAdvisor(true);}
@@ -1298,9 +1445,19 @@ async function startTurn(){
   for(const e of state.evq){
     if(e.done||state.over||state.turn<e.t[0]||state.turn>e.t[1]||!e.c()) continue;
     if(state.turn<e.t[1]&&Math.random()<.5) continue;
-    e.done=1;const [ti,sub,body,who]=e.run();
+    e.done=1;const [ti,sub,body,who,img,ch]=e.run();
     log(`【事件】${ti}：${sub}`,'k');
-    if(!AUTO){renderAll();await evt(ti,sub,body,who,'事件');}
+    if(!ch){if(!AUTO){renderAll();await evt(ti,sub,body,who,'事件',img);}continue;}
+    if(!isAI(ch.side)){
+      renderAll();
+      const k=await evt(ti,sub,body+'<div class="quote">主公，請決斷。</div>',who,null,img,ch.opts.map((o,i)=>[o[0],i]));
+      const res=ch.opts[k][1]();log(`【決斷】${ch.opts[k][0]}——${res}`,'k '+ch.side.toLowerCase());
+      if(!AUTO){herald(res,ch.side,'使番');renderAll();}
+    }else{
+      const k=ch.ai>=0?ch.ai:Math.floor(Math.random()*ch.opts.length);
+      const res=ch.opts[k][1]();log(`【${SN[ch.side]}決斷】${ch.opts[k][0]}——${res}`,'k '+ch.side.toLowerCase());
+      if(!AUTO){renderAll();await evt(ti,sub,body+`<div class="quote">${SN[ch.side]}的決斷：${ch.opts[k][0]}。<br>${res}</div>`,who,'事件',img);}
+    }
   }
   if(state.turn===state.fogEnd+1){log('霧散。整個關原盆地一覽無遺，鐵砲隊可以射擊了。','k');
     if(!AUTO){renderAll();herald('霧散了！整個關原盆地一覽無遺！','','物見');await sleep(600);}}
@@ -1420,7 +1577,13 @@ function scoreTarget(u,t){
 async function aiAttackBest(u){
   const tg=targets(u);if(!tg.length) return false;
   tg.sort((a,b)=>scoreTarget(u,b)-scoreTarget(u,a));
-  await attack(u,tg[0].e,tg[0].ranged);return true;
+  const t=tg[0].e;
+  if(!tg[0].ranged&&canDuel(u,t)&&(AUTO||t.side===state.player)&&Math.random()<.3){
+    const ok=AUTO?1:await modal(`<div class="mhead">${faceOf(u,64)}<div><h2>一騎討的挑戰</h2><div class="mt" style="margin:0">${u.name}策馬出陣</div></div></div><p>「${t.name}！可敢與我一決勝負？」</p><p>${u.name}（武力 ${DUEL[u.id][0]}）向你的${t.name}（武力 ${DUEL[t.id][0]}）發起一騎討。拒絕將被視為怯戰。</p><div class="quote">應戰：雙方大將單挑，敗者部隊士氣-35、兵力-6%。<br>拒絕：${t.name}隊士氣-10，${u.name}照常進攻。</div>`,[['拒絕（士氣-10）',0],['應戰！',1]],'scroll');
+    if(ok){u.attacked=u.moved=true;await duel(u,t);return true;}
+    t.morale-=10;log(`${t.name}拒絕了${u.name}的一騎討，軍中傳出怯戰的耳語。`,t.side.toLowerCase());
+  }
+  await attack(u,t,tg[0].ranged);return true;
 }
 function aiGoal(u){
   const enemies=units.filter(e=>isEnemy(u,e)&&!e.hid);
@@ -1526,6 +1689,13 @@ function onHex(c,r){
   if(u&&vis){selectUnit(u);return;}
   sel=null;pend=null;R=new Map();TG=[];renderAll();
 }
+async function playerDuel(e){
+  if(!sel||busy||!canDuel(sel,e)) return;
+  busy=true;const a=sel;a.attacked=a.moved=true;renderTop();
+  await duel(a,e);
+  busy=false;pend=null;if(state.over) return;
+  sel=a.state==='active'?a:null;R=new Map();TG=[];renderAll();
+}
 async function playerAttack(e){
   if(!sel||busy) return;
   const t=TG.find(x=>x.e===e);if(!t) return;
@@ -1580,16 +1750,25 @@ async function gameOver(winner,why){
     :(P==='E'?'「……是我太小看三成了。」家康咬著指甲，下令全軍撤退。':'「吾事已矣。」三成望著崩潰的陣線，轉身走入伊吹山中。');
   const ev=state.events.length?`<p><b>戰局關鍵</b></p><ul>${state.events.map(e=>`<li>${e}</li>`).join('')}</ul>`:'';
   const winCrest=winner==='E'?crest('aoi','',64):crest('ishida','',64);
-  const res=await modal(`<div class="mhead">${winCrest}<div><h2 class="${winner==='E'?'res-e':'res-w'}">${SN[winner]} ${grade}</h2><div class="mt" style="margin:0">${winner===P?'你贏了！':'你輸了……'}・${DIFF[state.diff].n}難度・${timeStr(Math.min(state.turn,16))}</div></div></div>
+  if(winner===P){if(P==='W')unlock('winW');if(P==='E'&&state.kobaRes==='E')unlock('histE');if(P==='E'&&U('honda').state!=='routed')unlock('honda');if(P==='W'&&U('sakon').state!=='routed')unlock('sakon');if(state.turn<=9)unlock('fast');if(state.diff===2)unlock('hard');}
+  const mine=units.filter(u=>u.origSide===P||(u.side===P&&u.defected)).sort((a,b)=>(b.dealt||0)-(a.dealt||0))[0];
+  const ratio=state.kills[P]/Math.max(1,state.kills[other(P)]);
+  const pts=(winner===P?50:0)+Math.min(25,ratio*12)+(winner===P?Math.max(0,16-state.turn)*2:0)+state.diff*5;
+  const rank=pts>=88?'特':pts>=72?'甲':pts>=50?'乙':'丙';
+  const mvp=mine&&mine.dealt?`<div class="mvp">${faceOf(mine,64)}<div><b style="font-size:13px;color:var(--muted)">首功</b><div style="font-size:18px;font-weight:900">${mine.name}</div><div style="font-size:13.5px">造成敵軍傷亡 ${mine.dealt.toLocaleString()}${mine.state==='routed'?'（已潰走）':''}</div></div><div style="text-align:center;margin-left:auto"><div style="font-size:12px;color:var(--muted)">戰功評定</div><div class="rank">${rank}</div></div></div>`:'';
+  const na=state.newAch.filter(id=>ACH.some(a=>a[0]===id));
+  const achTxt=na.length?`<p><b>本場獲得戰功印章：</b>${na.map(id=>'「'+ACH.find(a=>a[0]===id)[1]+'」').join('、')}（累計 ${achCount()}/${ACH.length}）</p>`:`<p style="font-size:13.5px;color:var(--muted)">戰功印章累計 ${achCount()}/${ACH.length}</p>`;
+  const res=await modal(`${sceneImg(winner==='E'?'winE':'winW')}<div class="mhead">${winCrest}<div><h2 class="${winner==='E'?'res-e':'res-w'}">${SN[winner]} ${grade}</h2><div class="mt" style="margin:0">${winner===P?'你贏了！':'你輸了……'}・${DIFF[state.diff].n}難度・${timeStr(Math.min(state.turn,16))}</div></div></div>
     <p>${reason}</p><div class="quote">${voice}</div>
     <table><tr><th></th><th>東軍</th><th>西軍</th></tr>
     <tr><td>殘存兵力</td><td>${sideStr('E').toLocaleString()}</td><td>${sideStr('W').toLocaleString()}</td></tr>
     <tr><td>造成敵軍傷亡</td><td>${state.kills.E.toLocaleString()}</td><td>${state.kills.W.toLocaleString()}</td></tr>
     <tr><td>潰走部隊</td><td>${units.filter(u=>u.side==='E'&&u.state==='routed').length}</td><td>${units.filter(u=>u.side==='W'&&u.state==='routed').length}</td></tr></table>
-    ${ev}${after}
+    ${mvp}${achTxt}${ev}${after}
     <p style="font-size:13.5px;color:var(--muted)">史實：小早川秀秋於正午前後倒戈，西軍在半日之內崩潰。南宮山的毛利軍在吉川廣家阻擋下終日未動。<br><a href="https://cashkingw.blogspot.com/search/label/%E9%97%9C%E5%8E%9F%E4%B9%8B%E6%88%B0" target="_blank" rel="noopener" style="color:var(--west);font-weight:700">想知道真實的關原之戰？看史實解析與攻略 →</a><br><a href="https://ko-fi.com/cash703856" target="_blank" rel="noopener" style="color:#8a6a10;font-weight:700">☕ 喜歡這個遊戲？在 Ko-fi 請作者喝杯咖啡</a></p>
-    <div class="seal">${winner===P?'勝':'敗'}</div>`,
-    [['檢視戰場',0],['換邊再戰',2],['再戰一場',1]],'scroll');
+    `,
+    [['檢視戰場',0],['戰功印章',3],['換邊再戰',2],['再戰一場',1]],'scroll');
+  if(res===3){await modal(`<h2>戰功印章</h2><div class="mt">已獲得 ${achCount()}/${ACH.length}</div>${achHTML()}`,[['再戰一場',1]]);startGame(P,state.diff);return;}
   if(res===1) startGame(P,state.diff);
   else if(res===2) startGame(other(P),state.diff);
 }
@@ -1607,6 +1786,9 @@ function showHelp(){
   <table style="width:100%;border-collapse:collapse;font-size:14px;margin:-4px 0 12px">${Object.keys(ST).map(k=>`<tr style="border-top:1px solid #d9cdb0"><td style="padding:4px 6px;white-space:nowrap"><b>${ST[k].n}</b></td><td style="padding:4px 6px;text-align:left">${ST[k].d}</td></tr>`).join('')}</table>
   <p><b>絕技</b>：名將各有一招一場限用一次的絕技，點選部隊即可查看與發動：</p>
   <table style="width:100%;border-collapse:collapse;font-size:13.5px;margin:-4px 0 12px">${Object.keys(SK).map(id=>`<tr style="border-top:1px solid #d9cdb0"><td style="padding:4px 6px;white-space:nowrap">${UDEF.find(d=>d[0]===id)[1]}<br><b>「${SK[id].n}」</b></td><td style="padding:4px 6px;text-align:left">${SK[id].d}</td></tr>`).join('')}</table>
+  <p><b>一騎討</b>：兩位有立繪的名將部隊相鄰時，攻擊預估中會出現「一騎討！」按鈕（每位武將一場限一次）。每合從猛攻、格擋、虛招中選一招：猛攻破虛招、虛招破格擋、格擋破猛攻。對手的架勢約七成可信，武力越高傷害越大。敗者部隊士氣-35、兵力-6%，勝者士氣+20。敵將也可能向你挑戰。</p>
+  <p><b>決斷事件</b>：戰鬥中部分事件需要你親自決斷——福島爭先鋒、吉川的密使、金吾的使者、島津拒絕出兵……不同選擇帶來不同結果。</p>
+  <p><b>戰功印章</b>：以不同方式取勝可蒐集 12 枚印章，結局會評定「特・甲・乙・丙」與首功武將。</p>
   <p><b>計略</b>（花費軍令）：</p><ul>${Object.keys(PLOT).map(k=>`<li><b>${PLOT[k].n}（${PLOT[k].c}）</b>：${PLOT[k].d}</li>`).join('')}</ul>
   <p><b>情報</b>：小早川、四將、南宮山的量表平時只是<b>傳聞</b>（誤差約±12），派忍者才能看到真實數值。</p>
   <p><b>軍議與事件</b>：開戰前選擇方略（敵方方略不公開）。戰鬥中會隨機發生史實事件——霧提早或延後散去、吉川的密使、大谷病情惡化、島津拒絕出兵……每場都不一樣。</p>
@@ -1621,6 +1803,9 @@ function showHelp(){
 }
 document.getElementById('helpBtn').onclick=showHelp;
 document.getElementById('helpBtn0').onclick=showHelp;
+function achBtnTxt(){const b=document.getElementById('achBtn');if(b)b.textContent=`戰功印章 ${achCount()}/${ACH.length}`;}
+achBtnTxt();
+document.getElementById('achBtn').onclick=()=>modal(`<h2>戰功印章</h2><div class="mt">已獲得 ${achCount()}/${ACH.length}・在不同條件下取勝即可蒐集</div>${achHTML()}`,[['關閉',true]]);
 
 /* ================= 序章與開始 ================= */
 async function prologue(side){
@@ -1629,13 +1814,13 @@ async function prologue(side){
     ['慶長三年八月','<p>太閤豐臣秀吉於伏見城病逝，享年六十二歲。臨終前，他緊握五大老的手，一再懇求：</p><div class="quote">「秀賴之事，拜託了……拜託了……」</div><p>那年，繼承人秀賴只有六歲。</p>'],
     ['慶長五年七月','<p>五大老筆頭德川家康以討伐上杉景勝為名，率諸大名東征。</p><p>就在家康離開大坂的同時，奉行石田三成發出檄文，列舉家康十三條罪狀。毛利輝元入大坂城為總大將，九萬西軍集結。</p><p>家康在下野小山召開軍議。福島正則第一個站起來：「我願為內府先鋒！」——東軍就此成形。</p>'],
     ['慶長五年九月十四日・夜','<p>冷雨。</p><p>西軍放棄大垣城，冒雨連夜西行，搶先佔據關原周圍的高地：笹尾山、天滿山、松尾山……</p><p>家康聞報，立即率軍追擊。兩軍在黑暗與泥濘中摸索前進，天亮之前，十數萬人已擠進這座東西不過四公里的盆地。</p>'],
-    ['慶長五年九月十五日・黎明',E
+    ['慶長五年九月十五日・黎明','fog',E
       ?'<p>你是<b>德川家康</b>，虛歲五十九。</p><p>從人質到三河之主，從三方原的慘敗到關東二百五十萬石——你等了一輩子，就為了今天。</p><p>但霧太濃了。你看不見敵人，也看不透松尾山上那個十九歲年輕人的心。</p><div class="quote">「此戰若敗，德川家三代積累將化為烏有。」</div>'
       :'<p>你是<b>石田三成</b>，虛歲四十一。</p><p>從近江寺廟的小沙彌，到太閤最信任的奉行。人們說你傲慢、不得人心——但你從未忘記太閤的恩義。</p><p>如今你佔盡地利，鶴翼之陣已經張開。只要松尾山與南宮山的大軍殺下，家康插翅難飛。</p><div class="quote">「大一大万大吉——一人為萬人，萬人為一人。」</div>'],
   ];
   for(let i=0;i<pages.length;i++){
-    const [yr,body]=pages[i];
-    const r=await modal(`<div class="pro"><div class="yr">${yr}</div>${body}</div>`,i<pages.length-1?[['略過序章','skip'],['繼續','next']]:[['開始決戰','next']],'scroll');
+    const pg=pages[i],yr=pg[0],img=pg.length>2?pg[1]:null,body=pg[pg.length-1];
+    const r=await modal(`${sceneImg(img)}<div class="pro"><div class="yr">${yr}</div>${body}</div>`,i<pages.length-1?[['略過序章','skip'],['繼續','next']]:[['開始決戰','next']],'scroll');
     if(r==='skip') break;
   }
 }
@@ -1659,11 +1844,11 @@ async function startGame(side,diff,withPrologue){
   if(!AUTO){
     if(withPrologue) await prologue(side);
     const pl=PLANS[side];
-    state.plan[side]=await modal(`<h2>軍議</h2><div class="mt">${side==='E'?'桃配山本陣・家康召集諸將':'笹尾山本陣・三成召集諸將'}——開戰前，決定我軍的方略。</div>${pl.map(x=>`<p><b>${x[1]}</b>：${x[2]}<br><span style="color:var(--muted);font-size:14px">${x[3]}</span></p>`).join('')}<div class="quote">敵軍也在擬定方略，內容不得而知。</div>`,pl.map(x=>[x[1],x[0]]),'scroll');
+    state.plan[side]=await modal(`${sceneImg('council')}<h2>軍議</h2><div class="mt">${side==='E'?'桃配山本陣・家康召集諸將':'笹尾山本陣・三成召集諸將'}——開戰前，決定我軍的方略。</div>${pl.map(x=>`<p><b>${x[1]}</b>：${x[2]}<br><span style="color:var(--muted);font-size:14px">${x[3]}</span></p>`).join('')}<div class="quote">敵軍也在擬定方略，內容不得而知。</div>`,pl.map(x=>[x[1],x[0]]),'scroll');
     horn();
-    await modal(`<div class="mhead">${side==='E'?crest('aoi','',64):crest('ishida','',64)}<div><h2>${side==='E'?'東軍 德川家康':'西軍 石田三成'}</h2><div class="mt" style="margin:0">慶長五年九月十五日・辰刻 8:00・濃霧</div></div></div>
+    await modal(`<div class="mhead">${side==='E'?face('ieyasu',72,'E'):face('ishida',72,'W')}<div><h2>${side==='E'?'東軍 德川家康':'西軍 石田三成'}</h2><div class="mt" style="margin:0">慶長五年九月十五日・辰刻 8:00・濃霧</div></div></div>
     ${side==='E'?'<p>主公，西軍已佔據笹尾山、天滿山、松尾山，鶴翼之陣張開等待我軍。我軍前鋒福島、井伊已與宇喜多隊接觸。</p><p>正面強攻固然重要，但真正的勝負在<b>松尾山</b>與<b>南宮山</b>——用軍令「調略」小早川與吉川，讓西軍從內部崩解。</p><p>擊潰笹尾山上的石田三成即可獲勝。</p>':'<p>治部殿，我軍佔盡地利，三面高地已將家康圍在盆地之中。只要守住陣地、等待松尾山與南宮山的大軍殺下，勝利就是我們的。</p><p>但小早川秀秋與吉川廣家心意難測——務必以軍令不斷<b>督促</b>，並在必要時<b>激勵</b>前線部隊。</p><p>守住笹尾山，撐到申刻，或擊潰德川本陣即可獲勝。</p>'}
-    <div class="quote">霧中只能看見我軍周圍3格內的敵軍，鐵砲無法射擊。霧預計在巳刻 10:00 前後散去。</div>`,[['出陣！',true]],'scroll');
+    <div class="quote">霧中只能看見我軍周圍3格內的敵軍，鐵砲無法射擊。霧預計在巳刻 10:00 前後散去。</div><p style="font-size:14px;color:var(--muted)">新玩法：名將相鄰時可發起「一騎討」單挑；戰況中會出現需要你決斷的事件。</p><div style="display:flex;gap:10px;align-items:center;margin-top:6px">${advisor().c}<div style="font-size:14px"><b>${advisor().n}</b>將在右側隨時進言。</div></div>`,[['出陣！',true]],'scroll');
     say(U('ii'),'井伊直政，搶先一步了！',true);gunfx(5);fxSmoke(U('ii'),4);
     setTimeout(()=>say(U('fukushima'),'可惡，竟被搶先！',true),900);
     await sleep(1200);
