@@ -2252,7 +2252,18 @@ svg.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.poi
 const up=e=>{P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size){drag=null;svg.classList.remove('dragging');}};
 svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);svg.addEventListener('pointerleave',up);
 svg.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;}},true);   // 拖曳後放開不算點擊
-const _bb=buildBoard;buildBoard=function(){_bb();Object.assign(CAM,{x:0,y:0,w:VW,h:VH});camApply();addPv();};
+// 水墨地形材質（Gemini 3x3 表切成 img/t_*.jpg；平地、村落、河流各兩種，依座標雜湊混用）
+const TEX={p:['p1','p1','p1','p1','p2'],h:['h'],m:['m'],f:['f'],v:['v1','v2'],r:['r1','r2']};
+function applyTex(){
+  const defs=svg.querySelector('defs');let d='';
+  for(const n of new Set(Object.values(TEX).flat())){const sz=n==='p2'?260:n[0]==='v'||n[0]==='r'?150:180;d+=`<pattern id="tx-${n}" patternUnits="userSpaceOnUse" width="${sz}" height="${sz}"><image href="img/t_${n}.jpg" width="${sz}" height="${sz}" preserveAspectRatio="none"/></pattern>`;}
+  defs.insertAdjacentHTML('beforeend',d);
+  svg.querySelectorAll('#board polygon.hx').forEach(h=>{const c=+h.dataset.c,r=+h.dataset.r,v=TEX[T[r][c]];if(!v)return;
+    const n=v[Math.floor(hsh(c,r)*v.length)%v.length];h.setAttribute('fill',`url(#tx-${n})`);h.setAttribute('stroke','rgba(90,70,40,.22)');h.setAttribute('stroke-width','.8');});
+  svg.querySelectorAll('#deco > g').forEach(g=>g.setAttribute('opacity','.45'));
+  svg.querySelectorAll('rect[fill="url(#pap2)"]').forEach(r=>r.setAttribute('opacity','.22'));svg.querySelectorAll('rect[fill="url(#pap1)"]').forEach(r=>r.setAttribute('opacity','.55'));   // 紙紋減淡   // 原本的山林村落圖示淡化，讓材質當主角
+}
+const _bb=buildBoard;buildBoard=function(){_bb();applyTex();Object.assign(CAM,{x:0,y:0,w:VW,h:VH});camApply();addPv();};
 const ui=document.createElement('div');ui.className='zoomui';
 ui.innerHTML='<button type="button" data-z="in" title="放大">＋</button><button type="button" data-z="out" title="縮小">－</button><button type="button" data-z="fit" title="看全圖">⤢</button><button type="button" data-z="cl" title="合戰特寫">🎬<small></small></button>';
 const MW=document.querySelector('.mapwrap');MW.style.position='relative';MW.appendChild(ui);
