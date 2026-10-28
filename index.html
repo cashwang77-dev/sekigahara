@@ -362,6 +362,22 @@ button{font-family:inherit;cursor:pointer}
       <p>義弘的決定是：不往後逃，而是<b>正面衝破敵陣</b>，殺向伊勢街道。</p>
       <div class="goal">勝利條件：申刻（16:00）前，讓島津隊抵達南方伊勢街道的出口（地圖下緣的金色格）。史實：一千五百人，回到薩摩的只有八十餘人。</div>
     </button>
+    <button class="side-card e r" data-side="V">
+      <div class="mon" id="monV"></div>
+      <img class="face e pt" src="img/p_ii.webp" alt="" onerror="this.remove()"><h2>劇本・霧中的先陣</h2>
+      <div class="lead">入門推薦　井伊直政・松平忠吉・福島正則</div>
+      <p>辰刻，濃霧。照理說先鋒是福島正則——但井伊直政帶著家康的四子松平忠吉，悄悄繞到最前面，搶先向宇喜多隊開火。</p>
+      <p>只有三支部隊、六個回合，適合第一次玩的人。</p>
+      <div class="goal">勝利條件：巳刻（10:30）結束前，對宇喜多隊造成的傷亡不少於我軍的損失，而且井伊隊不能潰走。</div>
+    </button>
+    <button class="side-card w r" data-side="O">
+      <div class="mon" id="monO"></div>
+      <img class="face w pt" src="img/p_otani.webp" alt="" onerror="this.remove()"><h2>劇本・大谷吉繼的最後一戰</h2>
+      <div class="lead">西軍名將篇・第一章　大谷吉繼・平塚為廣</div>
+      <p>午刻，松尾山的一萬五千大軍衝下山來——小早川秀秋倒戈了。早有防備的大谷吉繼，坐在轎上指揮，數度把小早川擊退。</p>
+      <p>但山腳下的脇坂四將，也在看著風向……</p>
+      <div class="goal">勝利條件：撐到未刻結束（15:00）大谷隊仍在戰場上，且讓倒戈軍傷亡 2000 以上。評定看你讓倒戈的大軍付出多少代價。打完可以接著挑戰第二章「島津的退口」。</div>
+    </button>
   </div>
   <div class="t-opts">
     <span>難度</span>
@@ -534,7 +550,7 @@ const PLANS={
   E:[['push','中央突破','福島、井伊、本多、黑田等前線十隊攻擊+10%（全場）。','正面硬碰硬，趁小早川還在猶豫時打穿宇喜多與石田。'],
      ['plot','調略重視','前6回合每回合軍令+1；小早川去就-10。','黑田長政早已在松尾山布下暗線，關鍵在讓西軍從內部瓦解。'],
      ['steady','穩紮穩打','全軍士氣+10；家康鼓舞範圍+1格。','不急於求勝，以大軍壓陣，等西軍自己露出破綻。']],
-  W:[['hold','鶴翼死守','西軍開戰陣地的馬防柵防禦×1.4（原×1.25）。','據守高地與柵欄，讓東軍在盆地裡流血。'],
+  W:[['hold','鶴翼死守','西軍開戰陣地的馬防柵防禦×1.33（原×1.18）。','據守高地與柵欄，讓東軍在盆地裡流血。'],
      ['plot','松尾山工作','小早川去就+12、脇坂四將+10、南宮山出陣度+8。','開戰前再派密使登山，確保盟約不會動搖。'],
      ['sally','主動出擊','宇喜多、島左近、大谷等前線五隊攻擊+10%，霧中進攻不受減弱。','趁霧中敵情不明，主動殺出鶴翼之陣。']]
 };
@@ -723,7 +739,7 @@ function calc(att,def,ranged,rnd){
   const mu=matchup(att,def,ranged),stA={atk:1.15,def:.85}[att.st]||1,stD={def:1.15,atk:.9,col:.8}[def.st]||1;
   let p=eff(att.troops)*att.atk*(0.5+att.morale/200)*(inAura(att)?1.1:1)*(1+0.12*flank)*mu*stA*(bf(att,'atk')||1)*planAtk(att)*(att.hid?1.5:1);
   if(ta==='r'&&!ROAD.has(key(att.c,att.r))) p*=0.85;
-  const dv=def.def*(ROAD.has(key(def.c,def.r))&&td==='p'?1:TER[td].def)*(def.fort?(state.plan.W==='hold'?1.4:1.25):1)*stD*(bf(def,'df')||1);
+  const dv=def.def*(ROAD.has(key(def.c,def.r))&&td==='p'?1:TER[td].def)*(def.fort?(state.plan.W==='hold'?1.33:1.18):1)*stD*(bf(def,'df')||1);
   const fogm=fogNow()&&!(state.plan.W==='sally'&&att.side==='W')?0.75:1;
   let dd=p*(ranged?0.05:0.09)/dv*mA*r1*fogm, da=0;
   if(!ranged) da=eff(def.troops)*def.def*(0.5+def.morale/200)*TER[td].def*0.045/att.def*mD*r2*fogm*matchup(def,att,false)*(def.st==='def'?1.1:1)*(att.hid?.5:1);
@@ -813,7 +829,7 @@ async function duel(att,def){
   return win;
 }
 /* ---- 戰功印章 ---- */
-const ACH=[['histE','史實重現','以東軍獲勝，且小早川倒戈東軍'],['teppo','問鐵砲','以「問鐵砲」逼小早川倒戈'],['honda','五十七戰無傷','以東軍獲勝，且本多忠勝未曾潰走'],['winW','逆轉關原','以西軍獲勝'],['sakon','鬼左近健在','以西軍獲勝，且島左近未曾潰走'],['kobaW','金吾之義','讓小早川秀秋投入西軍'],['mori','毛利出陣','讓南宮山的毛利軍殺下山'],['fast','速戰速決','在午刻（第9回合）以前獲勝'],['hard','天下人','以「天下人」難度獲勝'],['duel','一騎當千','一場之中贏得兩次一騎討'],['shimazu','島津的退口','親自指揮島津義弘發動「捨奸」'],['fire','火攻','以火計重創敵軍部隊']];
+const ACH=[['histE','史實重現','以東軍獲勝，且小早川倒戈東軍'],['teppo','問鐵砲','以「問鐵砲」逼小早川倒戈'],['honda','五十七戰無傷','以東軍獲勝，且本多忠勝未曾潰走'],['winW','逆轉關原','以西軍獲勝'],['sakon','鬼左近健在','以西軍獲勝，且島左近未曾潰走'],['kobaW','金吾之義','讓小早川秀秋投入西軍'],['mori','毛利出陣','讓南宮山的毛利軍殺下山'],['fast','速戰速決','在午刻（第9回合）以前獲勝'],['hard','天下人','以「天下人」難度獲勝'],['duel','一騎當千','一場之中贏得兩次一騎討'],['shimazu','島津的退口','親自指揮島津義弘發動「捨奸」'],['fire','火攻','以火計重創敵軍部隊'],['vanguard','抜け駆け','劇本「霧中的先陣」搶先成功'],['otani','刑部的意地','劇本「大谷吉繼的最後一戰」撐到未刻結束']];
 function achGet(){try{return JSON.parse(localStorage.getItem('sekiAch')||'{}');}catch(e){return {};}}
 function unlock(id){
   if(AUTO||!state) return;
@@ -1376,7 +1392,7 @@ async function checkRout(u){
       const poem=POEM[u.id]?`<div class="poem"><div class="jp">${POEM[u.id].jp}</div><div class="zh">${POEM[u.id].zh}</div></div>`:'';
       await evt(`${u.name} 潰走`,SN[u.side]+'損失一支部隊',`<p>${lines[u.id]||`${u.name}隊兵力折損、軍心潰散，已無法再戰。`}</p>${poem}`,u,u.id==='otani'?'辭世':null,{otani:'otani',shimazu:'shimazu',sakon:'sakon'}[u.id]);
     }
-    if(!state.over){const s=u.side;if(sideStr(s,true)<state.peak[s]*0.35) await gameOver(other(s),'collapse');}
+    if(!state.over&&state.mode!=='otani'){const s=u.side;if(sideStr(s,true)<state.peak[s]*0.35) await gameOver(other(s),'collapse');}
   }
 }
 function rally(u,side){
@@ -1523,7 +1539,7 @@ async function endPhase(){
   if(state.phase===first) await beginPhase(other(first));
   else{
     state.turn++;
-    if(state.turn>16){await gameOver(null,'time');return;}
+    if(state.turn>(SCN[state.mode]?SCN[state.mode].last:16)){await gameOver(null,'time');return;}
     await startTurn();
   }
 }
@@ -1809,6 +1825,7 @@ async function gameOver(winner,why){
   if(state.over) return;
   state.over=true;busy=false;
   if(state.mode==='retreat') return retreatEnd(why==='retreat');
+  if(SCN[state.mode]) return scnEnd(winner,why);
   let grade='';
   if(why==='time'){winner=state.kills.E>=state.kills.W*1.25?'E':'W';grade=winner==='E'?'判定勝利':'堅守成功';}
   else grade=why==='cmd'?'決定性勝利':'大勝';
@@ -1823,6 +1840,13 @@ async function gameOver(winner,why){
   const after=winner==='E'
     ?`<p>石田三成逃入伊吹山中，六日後被捕。十月一日，三成、小西行長、安國寺惠瓊在京都六條河原被斬首。臨刑前，三成留下辭世：</p><div class="poem"><div class="jp">${POEM.ishida.jp}</div><div class="zh">${POEM.ishida.zh}</div></div><p>三年後，家康受封征夷大將軍，開創延續兩百六十餘年的江戶幕府。</p>`
     :(why==='cmd'?'<p>內府戰敗的消息震動天下。德川家臣拚死護送家康退回江戶，豐臣政權得以延續。治部少輔石田三成以「義」字聚集的西軍，改寫了日本的歷史。</p>':'<p>家康被迫退兵，豐臣政權得以延續。五大老的權力平衡被重新改寫——戰國時代，或許還要再延長一個世代。</p>');
+  // 10/28 歷史分歧：依小早川、毛利的去就，給這一局一段「如果」的評語
+  const kr=state.kobaRes,nr=state.nanguRes,ifs=[];
+  if(kr==='W') ifs.push(winner==='W'?'小早川秀秋的一萬五千人沒有倒戈，而是從松尾山殺向東軍側翼——史實上的「背叛者」，在這個世界成了西軍的英雄。':'就算小早川站在西軍這邊，東軍仍然正面擊破了西軍。這是比史實艱難得多的勝利，家康的威望將無人能及。');
+  else if(!kr) ifs.push(winner==='E'?'小早川到最後都沒有表態，松尾山的大軍只是看著。戰後，這位「觀望者」會被怎麼清算呢？':'小早川始終沒有下山。少了這一萬五千人的變數，勝負在盆地的正面就分出來了。');
+  else if(kr==='E'&&winner==='W') ifs.push('小早川倒戈了，西軍卻沒有崩潰——史實上在倒戈後半日瓦解的西軍，在這個世界撐住了。');
+  if(nr==='W') ifs.push(winner==='W'?'毛利秀元終於越過吉川廣家的阻擋，南宮山的大軍出現在家康背後。腹背受敵的東軍，再也撐不住了。':'毛利軍殺下南宮山，家康腹背受敵，卻仍然頂住了。「宰相殿的空便當」沒有發生——毛利家這一戰，將為此付出代價。');
+  const ifp=ifs.length?`<div class="quote" style="border-left-color:var(--gold)"><b>這個世界的關原</b><br>${ifs.join('<br>')}</div>`:'';
   const voice=P===winner?(P==='E'?'「……這一仗，總算是贏了。」家康脫下頭盔，望向西方的天空。':'「太閤殿下，三成……守住了。」笹尾山上，石田三成跪倒在夕陽之中。')
     :(P==='E'?'「……是我太小看三成了。」家康咬著指甲，下令全軍撤退。':'「吾事已矣。」三成望著崩潰的陣線，轉身走入伊吹山中。');
   const ev=state.events.length?`<p><b>戰局關鍵</b></p><ul>${state.events.map(e=>`<li>${e}</li>`).join('')}</ul>`:'';
@@ -1842,7 +1866,7 @@ async function gameOver(winner,why){
     <tr><td>殘存兵力</td><td>${sideStr('E').toLocaleString()}</td><td>${sideStr('W').toLocaleString()}</td></tr>
     <tr><td>造成敵軍傷亡</td><td>${state.kills.E.toLocaleString()}</td><td>${state.kills.W.toLocaleString()}</td></tr>
     <tr><td>潰走部隊</td><td>${units.filter(u=>u.side==='E'&&u.state==='routed').length}</td><td>${units.filter(u=>u.side==='W'&&u.state==='routed').length}</td></tr></table>
-    ${mvp}${achTxt}${ev}${after}
+    ${mvp}${achTxt}${ev}${after}${ifp}
     <p style="font-size:13.5px;color:var(--muted)">史實：小早川秀秋於正午前後倒戈，西軍在半日之內崩潰。南宮山的毛利軍在吉川廣家阻擋下終日未動。<br><a href="https://cashkingw.blogspot.com/search/label/%E9%97%9C%E5%8E%9F%E4%B9%8B%E6%88%B0" target="_blank" rel="noopener" style="color:var(--west);font-weight:700">想知道真實的關原之戰？看史實解析與攻略 →</a><br><a href="https://ko-fi.com/cash703856" target="_blank" rel="noopener" style="color:#8a6a10;font-weight:700">☕ 喜歡這個遊戲？在 Ko-fi 請作者喝杯咖啡</a></p>
     ${SHAREBTN}${XPROMO}`,
     [['檢視戰場',0],['戰功印章',3],['換邊再戰',2],['再戰一場',1]],'scroll');
@@ -1855,7 +1879,7 @@ async function gameOver(winner,why){
 function showHelp(){
   modal(`<h2>遊戲說明</h2><div class="mt">每回合 30 分鐘，從辰刻 8:00 到申刻 16:00，共 16 回合。東軍先動。霧通常在巳刻 10:00 前後散去。</div>
   <p><b>行動</b>：每支部隊每回合可「移動」再「攻擊」一次。移動進入敵軍相鄰格會被牽制停下。有鐵砲的部隊在原地不動時可遠距射擊（霧中不行）。</p>
-  <p><b>地形</b>：丘陵防禦×1.3、山地×1.5、森林×1.2、村落×1.15；河川中防禦×0.8且攻擊減弱。山地移動消耗3、丘陵與森林2，街道一律1。西軍開戰時的陣地設有馬防柵（防禦×1.25），一旦移動就失去。</p>
+  <p><b>地形</b>：丘陵防禦×1.3、山地×1.5、森林×1.2、村落×1.15；河川中防禦×0.8且攻擊減弱。山地移動消耗3、丘陵與森林2，街道一律1。西軍開戰時的陣地設有馬防柵（防禦×1.18），一旦移動就失去。</p>
   <p><b>戰鬥</b>：兵力越多越強（超過五千人的部分效益遞減）。多支部隊圍攻同一目標有夾擊加成（每支+12%）。士氣歸零或兵力低於兩成即潰走，並打擊鄰近友軍士氣。霧中近戰威力減弱。</p>
   <p><b>兵種</b>：旗幟左下角的圓形徽章代表兵種，點選部隊可在右側看到詳細說明。</p>
   <table style="width:100%;border-collapse:collapse;font-size:14px;margin:-4px 0 12px">${Object.keys(UT).map(t=>`<tr style="border-top:1px solid #d9cdb0"><td style="padding:5px 6px;white-space:nowrap">${utBadge(t)} <b>${UT[t].full}</b></td><td style="padding:5px 6px;text-align:left">${UT[t].d}<br><small style="color:var(--muted)">代表：${UDEF.filter(d=>utype({gun:d[8],mov:d[7]})===t).map(d=>d[1]).join('、')||'—'}</small></td></tr>`).join('')}</table>
@@ -1866,7 +1890,7 @@ function showHelp(){
   <table style="width:100%;border-collapse:collapse;font-size:13.5px;margin:-4px 0 12px">${Object.keys(SK).map(id=>`<tr style="border-top:1px solid #d9cdb0"><td style="padding:4px 6px;white-space:nowrap">${UDEF.find(d=>d[0]===id)[1]}<br><b>「${SK[id].n}」</b></td><td style="padding:4px 6px;text-align:left">${SK[id].d}</td></tr>`).join('')}</table>
   <p><b>一騎討</b>：兩位有立繪的名將部隊相鄰時，攻擊預估中會出現「一騎討！」按鈕（每位武將一場限一次）。每合從猛攻、格擋、虛招中選一招：猛攻破虛招、虛招破格擋、格擋破猛攻。對手的架勢約七成可信，武力越高傷害越大。敗者部隊士氣-35、兵力-6%，勝者士氣+20。敵將也可能向你挑戰。</p>
   <p><b>決斷事件</b>：戰鬥中部分事件需要你親自決斷——福島爭先鋒、吉川的密使、金吾的使者、島津拒絕出兵……不同選擇帶來不同結果。</p>
-  <p><b>戰功印章</b>：以不同方式取勝可蒐集 12 枚印章，結局會評定「特・甲・乙・丙」與首功武將。</p>
+  <p><b>戰功印章</b>：以不同方式取勝可蒐集 14 枚印章，結局會評定「特・甲・乙・丙」與首功武將。</p>
   <p><b>計略</b>（花費軍令）：</p><ul>${Object.keys(PLOT).map(k=>`<li><b>${PLOT[k].n}（${PLOT[k].c}）</b>：${PLOT[k].d}</li>`).join('')}</ul>
   <p><b>情報</b>：小早川、四將、南宮山的量表平時只是<b>傳聞</b>（誤差約±12），派忍者才能看到真實數值。</p>
   <p><b>軍議與事件</b>：開戰前選擇方略（敵方方略不公開）。戰鬥中會隨機發生史實事件——霧提早或延後散去、吉川的密使、大谷病情惡化、島津拒絕出兵……每場都不一樣。</p>
@@ -1910,13 +1934,15 @@ async function prologue(side){
 }
 document.querySelectorAll('.side-card').forEach(c=>c.onclick=()=>{
   chosenSide=c.dataset.side;document.querySelectorAll('.side-card').forEach(x=>x.classList.toggle('on',x===c));
-  const b=document.getElementById('startBtn');b.disabled=false;b.textContent=chosenSide==='R'?'以島津隊突圍':`以${SN[chosenSide]}出陣`;
+  const b=document.getElementById('startBtn');b.disabled=false;b.textContent=chosenSide==='R'?'以島津隊突圍':chosenSide==='V'?'以井伊隊搶先出擊':chosenSide==='O'?'以大谷隊迎擊':`以${SN[chosenSide]}出陣`;
 });
 document.getElementById('monE').innerHTML=crest('aoi','',54,'#f6f0e1','#2d4777');
 document.getElementById('monW').innerHTML=crest('ishida','',54,'#f6f0e1','#962a22');
 if(document.getElementById('monR'))document.getElementById('monR').innerHTML=crest('shimazu','',54,'#f6f0e1','#962a22');
+if(document.getElementById('monV'))document.getElementById('monV').innerHTML=crest('ii','',54,'#f6f0e1','#2d4777');
+if(document.getElementById('monO'))document.getElementById('monO').innerHTML=crest('ishida','',54,'#f6f0e1','#962a22');
 document.querySelectorAll('#diffSeg button').forEach(b=>b.onclick=()=>{chosenDiff=+b.dataset.d;document.querySelectorAll('#diffSeg button').forEach(x=>x.classList.toggle('on',x===b));});
-document.getElementById('startBtn').onclick=()=>{auInit();musicStart();if(chosenSide==='R')startRetreat(chosenDiff);else startGame(chosenSide,chosenDiff,true);};
+document.getElementById('startBtn').onclick=()=>{auInit();musicStart();if(chosenSide==='R')startRetreat(chosenDiff);else if(chosenSide==='V')startScn('vanguard',chosenDiff);else if(chosenSide==='O')startScn('otani',chosenDiff);else startGame(chosenSide,chosenDiff,true);};
 async function startGame(side,diff,withPrologue){
   document.getElementById('title').classList.add('hidden');
   document.getElementById('game').classList.remove('hidden');
@@ -2068,7 +2094,88 @@ async function retreatEnd(win){
     <p style="font-size:13.5px;color:var(--muted)">評定：脫出兵力 ≥60% 特、≥35% 甲、≥15% 乙。</p>${SHAREBTN}${XPROMO}`,[['回到標題',0],['再挑戰',1]],'scroll');
   if(res===1)startRetreat(state.diff);else location.reload();
 }
-if(AUTO&&/retreat=1/.test(location.search)){startRetreat(1);}
+/* ================= 劇本：霧中的先陣／大谷吉繼的最後一戰（2026-10-28） =================
+   沿用同一張地圖：沒參戰的部隊設成「觀望」（state waver、group reserve），不行動也不能被攻擊。
+   SCN[mode]：side＝玩家、turn＝開始回合、last＝最後回合、E/W＝參戰部隊、grade()＝評定。 */
+const SCN={
+  vanguard:{side:'E',turn:1,last:6,fog:4,E:['ii','tadayoshi','fukushima'],W:['ukita'],
+    grade(){const iiOk=U('ii').state==='active',r=state.kills.E/Math.max(1,state.kills.W),win=iiOk&&r>=1&&sideStr('E')>0;
+      return {win,rank:!win?'—':r>=1.8?'特':r>=1.4?'甲':r>=1.15?'乙':'丙',r,head:win?'霧中的先陣・搶先成功':'霧中的先陣・先鋒受挫',
+        sub:`戰損比 ${r.toFixed(2)}${iiOk?'':'・井伊隊潰走'}`};}},
+  otani:{side:'W',turn:9,last:14,fog:0,E:['koba','todo','kyogoku'],W:['otani','hiratsuka','wakisaka','kutsuki','ogawa','akaza'],
+    grade(why){const k=state.kills.W,alive=U('otani').state==='active'&&why==='time'&&k>=2000;
+      return {win:alive,rank:alive?(k>=5000?'特':k>=3000?'甲':'乙'):(k>=3000?'丙':'—'),k,head:alive?'大谷吉繼・堅守到最後':U('otani').state==='active'?'大谷吉繼・未能擋住倒戈軍':'大谷吉繼・壯烈戰死',
+        sub:`讓倒戈軍付出的傷亡 ${k.toLocaleString()} 人`};}},
+};
+async function startScn(mode,diff){
+  const S=SCN[mode];
+  document.getElementById('title').classList.add('hidden');
+  document.getElementById('game').classList.remove('hidden');
+  newGame(S.side,diff);
+  Object.assign(state,{mode,turn:S.turn,fogEnd:S.fog,kobaDone:true,kobaRes:mode==='otani'?'E':null,nanguDone:true,nanguRes:'stay',evq:[],peak:{E:0,W:0}});
+  const on=new Set([...S.E,...S.W]);
+  for(const u of units){
+    if(!on.has(u.id)){u.state='waver';u.group='reserve';u.fort=false;continue;}
+    u.state='active';u.group=null;u.morale=95;
+    if(S.E.includes(u.id)&&u.side!=='E'){u.side='E';u.defected=true;}
+  }
+  if(mode==='otani'){
+    for(const id of ['wakisaka','kutsuki','ogawa','akaza']){const u=U(id);u.group='four';u.fort=false;u.state='waver';}   // 四將：在山腳觀望（不能操作），未刻倒戈
+    Object.assign(U('otani'),{cmd:true,fort:true,troops:5400,max:5400});U('hiratsuka').fort=true;   // 大谷隊含大谷吉勝、木下賴繼
+    buff(U('otani'),{df:1.4},99);buff(U('hiratsuka'),{df:1.2},99);   // 早已預料小早川倒戈：布陣監視松尾山
+    U('koba').morale=65;buff(U('koba'),{atk:.85},4);   // 小早川隊：倒戈的士兵心存動搖，頭兩個時辰攻勢不振
+    state.plan={E:'push',W:'hold'};
+  }else{U('ii').cmd=false;Object.assign(U('ukita'),{troops:9000,max:9000,fort:false});state.plan={E:'push',W:'plot'};}   // 先陣：只有宇喜多的前鋒接敵、還沒進柵欄
+  updPeak();buildBoard();
+  setMode(mode==='otani'?'climax':'fog');syncAudioBtns();document.getElementById('herald').innerHTML='';
+  if(mode==='vanguard'){log('辰刻，濃霧。井伊直政與松平忠吉繞過福島隊，搶先向宇喜多隊開火！','k e');}
+  else{log('午刻，松尾山上響起鬨聲——小早川秀秋倒戈，一萬五千大軍衝向大谷隊！','k');log('大谷吉繼：「果然來了。金吾，三年之內必遭報應！」','k w');}
+  renderAll();renderAdvisor();
+  if(!AUTO&&!VIEW){
+    if(mode==='vanguard') await modal(`${sceneImg('council')}<div class="mhead">${face('ii',72,'E')}<div><h2>霧中的先陣</h2><div class="mt" style="margin:0">慶長五年九月十五日　辰刻 8:00・濃霧</div></div></div>
+      <p>依軍令，東軍先鋒是福島正則。可是井伊直政不甘心——他帶著松平忠吉（家康的四子）穿過霧氣，搶到福島隊前面，率先向宇喜多隊開火。</p>
+      <p>「讓德川家的人打響第一槍」——這一步，關係到戰後的論功行賞。</p>
+      <div class="quote">只有你的三支部隊會參戰，其他部隊都還在霧中觀望。<br>巳刻（10:30）結束前：對宇喜多隊造成的傷亡 ≥ 我軍損失，而且井伊隊不能潰走。<br>霧中鐵砲不能射擊；霧在巳刻 10:00 散去。</div>`,[['出陣！',true]],'scroll');
+    else await modal(`<div class="mhead">${face('otani',72,'W')}<div><h2>大谷吉繼的最後一戰</h2><div class="mt" style="margin:0">西軍名將篇・第一章　午刻 12:00</div></div></div>
+      <p>大谷吉繼患了重病，臉上纏著白布，坐在轎上指揮。他早就懷疑小早川，把部隊排成面向松尾山的陣形。</p>
+      <p>松尾山的大軍果然衝下來了。大谷隊數度把小早川擊退——但山腳的脇坂、朽木、小川、赤座四將，正在觀望。</p>
+      <div class="quote">撐到未刻結束（15:00）大谷隊仍在戰場上、且讓倒戈軍傷亡 2000 以上即為勝利；大谷隊潰走則戰死。<br>評定看你讓倒戈的大軍付出多少傷亡（5000 以上「特」）。<br>注意：四將隨時可能倒戈。</div>`,[['迎擊！',true]],'scroll');
+  }
+  applyPlans();
+  await startTurn();
+}
+// 大谷劇本：未刻 13:30，脇坂四將倒戈
+const _startTurnS=startTurn;
+startTurn=async function(){
+  if(state.mode==='otani'&&state.turn===12&&!state.fourDef){
+    state.fourDef=true;
+    for(const id of ['wakisaka','kutsuki','ogawa','akaza']){const u=U(id);u.side='E';u.defected=true;u.morale=95;u.state='active';u.group=null;}
+    log('【倒戈】脇坂安治、朽木元綱、小川祐忠、赤座直保——四將同時倒戈，從側面殺向大谷隊！','k');
+    if(!AUTO){renderAll();horn();await evt('四將倒戈','未刻 13:30','<p>山腳下的四將旗幟一齊轉向。原本站在大谷隊身旁的友軍，刀口轉了過來。</p><p>大谷吉繼聽到報告，只說了一句：「……是嗎。」</p>',U('otani'),'倒戈');}
+  }
+  return _startTurnS();
+};
+async function scnEnd(winner,why){
+  const S=SCN[state.mode],g=S.grade(why);
+  if(AUTO){document.title=`RESULT scn ${state.mode} ${g.win?'win':'lose'} rank${g.rank} turn${state.turn} kills E${state.kills.E} W${state.kills.W} why${why}`;return;}
+  if(g.win&&state.mode==='otani')unlock('otani');
+  if(g.win&&state.mode==='vanguard')unlock('vanguard');
+  updIntensity();renderAll();horn();await sleep(1000);
+  const mode=state.mode,P=S.side;
+  BATTLE={head:g.head,sub:g.sub,side:P,rank:g.rank,diff:DIFF[state.diff].n,time:timeStr(Math.min(state.turn,16)),mvp:mode==='otani'?'大谷吉繼':'井伊直政',kills:state.kills[P]};
+  const hist=mode==='otani'
+    ?'史實：大谷隊數度擊退小早川，但四將倒戈後陷入包圍。大谷吉繼在山中自刃，臨終前命家臣湯淺五助把他的首級藏起來，不讓敵軍看見他病後的面容。辭世：「契りあらば　六つの巷に　待てしばし　遅れ先立つ　事はありとも」（若有緣，就在冥途稍等我——無論誰先誰後）。'
+    :'史實：井伊直政與松平忠吉的「抜け駆け」（搶先出擊）打響了關原之戰的第一槍。戰後井伊直政受封近江佐和山——正是石田三成的居城。';
+  const btns=mode==='otani'?[['回到標題',0],['再挑戰',1],['下一章：島津的退口',2]]:[['回到標題',0],['再挑戰',1],['挑戰本戰（東軍）',3]];
+  const res=await modal(`<div class="mhead">${face(mode==='otani'?'otani':'ii',72,P)}<div><h2 class="${P==='E'?'res-e':'res-w'}">${g.head}</h2><div class="mt" style="margin:0">評定 ${g.rank}・${DIFF[state.diff].n}難度・${timeStr(Math.min(state.turn,16))}</div></div></div>
+    <p>${g.sub}。</p>
+    <table><tr><th></th><th>東軍</th><th>西軍</th></tr><tr><td>造成敵軍傷亡</td><td>${state.kills.E.toLocaleString()}</td><td>${state.kills.W.toLocaleString()}</td></tr></table>
+    <div class="quote">${hist}</div>
+    <p style="font-size:13.5px;color:var(--muted)">${mode==='otani'?'評定：撐到未刻結束且造成傷亡 ≥5000 特、≥3000 甲、≥2000 乙；戰死但 ≥3000 丙。':'評定：戰損比 ≥1.8 特、≥1.4 甲、≥1.15 乙、≥1 丙。'}</p>${SHAREBTN}${XPROMO}`,btns,'scroll');
+  if(res===1)startScn(mode,state.diff);else if(res===2)startRetreat(state.diff);else if(res===3)startGame('E',state.diff,true);else location.reload();
+}
+if(AUTO&&/scn=(\w+)/.test(location.search)){startScn(location.search.match(/scn=(\w+)/)[1],1);}
+else if(AUTO&&/retreat=1/.test(location.search)){startRetreat(1);}
 else if(AUTO){startGame(/side=W/.test(location.search)?'W':'E',1);}
 else if(VIEW){startGame(VIEW,1);}
 </script>
