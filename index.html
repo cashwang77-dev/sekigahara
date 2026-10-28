@@ -2205,6 +2205,21 @@ const bgmOn=()=>BGM.ok&&BGM.cur&&BGM.el[BGM.cur]&&!BGM.el[BGM.cur].paused;
   const now=AU.c.currentTime;
   AU.wind.g.gain.setTargetAtTime(AU.mode==='fog'?.05:.015,now,1.5);AU.rumble.g.gain.setTargetAtTime(0,now,1.5);AU.drone.gain.setTargetAtTime(0,now,1.5);
 };}
+/* ---------- 音效音檔（2026-10-29）：audio/sfx/<名>.mp3 解碼成 AudioBuffer 走 AU.sfx；沒載入就用原本的合成音 ---------- */
+const SFXF={gun:.9,cannon:1,horn:.8,roar:.75,clash:.85,horse:.8};   // 名稱：音量
+const SFXB={};
+function sfxLoad(){
+  if(sfxLoad.done||!AU.c)return;sfxLoad.done=true;
+  for(const k of Object.keys(SFXF))fetch(`audio/sfx/${k}.mp3`).then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(b=>AU.c.decodeAudioData(b)).then(buf=>{SFXB[k]=buf;}).catch(()=>{});
+}
+function sfxPlay(k,vol=1,rate){
+  if(!sfxOK()||!SFXB[k])return false;
+  const s=AU.c.createBufferSource(),g=AU.c.createGain();s.buffer=SFXB[k];s.playbackRate.value=rate||(.93+Math.random()*.14);
+  g.gain.value=SFXF[k]*vol;s.connect(g).connect(AU.sfx);s.start();return true;
+}
+{const _ai=auInit;auInit=function(){const c=_ai();if(c)sfxLoad();return c;};}
+{const w=(name,k,vf)=>{const f=window[name];window[name]=function(...a){if(sfxPlay(k,vf?vf(...a):1))return;return f.apply(this,a);};};
+  w('gunfx','gun',n=>Math.min(1.2,.6+(n||4)*.1));w('cannon','cannon');w('horn','horn');w('roar','roar',v=>Math.min(1,v||1));w('clash','clash');}
 /* ================= v6 臨場感（2026-10-29）：地圖縮放拖曳＋鏡頭跟隨、名將立繪棋子、合戰特寫、槍火揚塵墨飛沫、移動路線預覽 ================= */
 (()=>{if(AUTO)return;
 const st=document.createElement('style');st.textContent=`
