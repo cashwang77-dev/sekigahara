@@ -2174,6 +2174,147 @@ async function scnEnd(winner,why){
     <p style="font-size:13.5px;color:var(--muted)">${mode==='otani'?'評定：撐到未刻結束且造成傷亡 ≥5000 特、≥3000 甲、≥2000 乙；戰死但 ≥3000 丙。':'評定：戰損比 ≥1.8 特、≥1.4 甲、≥1.15 乙、≥1 丙。'}</p>${SHAREBTN}${XPROMO}`,btns,'scroll');
   if(res===1)startScn(mode,state.diff);else if(res===2)startRetreat(state.diff);else if(res===3)startGame('E',state.diff,true);else location.reload();
 }
+/* ================= v6 臨場感（2026-10-29）：地圖縮放拖曳＋鏡頭跟隨、名將立繪棋子、合戰特寫、槍火揚塵墨飛沫、移動路線預覽 ================= */
+(()=>{if(AUTO)return;
+const st=document.createElement('style');st.textContent=`
+#map.zoomed{cursor:grab}#map.dragging{cursor:grabbing}
+.zoomui{position:absolute;right:16px;bottom:16px;z-index:6;display:flex;flex-direction:column;gap:6px}
+.zoomui button{width:38px;height:38px;border:1px solid #8a6a3c;background:rgba(246,240,225,.92);color:#2a1d12;font:700 18px/1 var(--brush);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.35);padding:0}
+.zoomui button.on{background:#962a22;color:#fff}
+.zoomui button small{display:block;font-size:9px;letter-spacing:0;margin-top:1px}
+.zhint{position:absolute;right:62px;bottom:18px;z-index:6;background:rgba(32,24,16,.9);color:#f6f0e1;font-size:13px;padding:6px 10px;pointer-events:none;animation:hdout .6s ease-in 5s forwards}
+#clash{position:absolute;left:50%;bottom:6%;width:min(94%,640px);transform:translateX(-50%);z-index:7;pointer-events:none;display:none}
+#clash.show{display:block;animation:clin .28s ease-out both}
+#clash.out{animation:clout .3s ease-in forwards}
+@keyframes clin{from{opacity:0;transform:translate(-50%,24px) scale(.96)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes clout{to{opacity:0;transform:translate(-50%,10px)}}
+#clash .bd{position:relative;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:12px 16px;background:linear-gradient(100deg,rgba(14,24,48,.95) 0%,rgba(28,22,16,.93) 46%,rgba(28,22,16,.93) 54%,rgba(70,12,8,.95) 100%);border-top:3px solid var(--gold);border-bottom:3px solid var(--gold);box-shadow:0 10px 30px rgba(0,0,0,.55);color:#f6f0e1;overflow:hidden}
+#clash .sd{display:flex;align-items:center;gap:10px;min-width:0}
+#clash .sd.r{flex-direction:row-reverse;text-align:right}
+#clash .fc{width:72px;height:72px;flex:0 0 auto;border:2px solid var(--gold);background:#1c140c;display:grid;place-items:center;overflow:hidden}
+#clash .fc img{width:100%;height:100%;object-fit:cover;border:0;border-radius:0}
+#clash .fc svg{width:60px;height:60px}
+#clash .l .fc{animation:fcl .35s ease-out both}#clash .r .fc{animation:fcr .35s ease-out both}
+@keyframes fcl{from{transform:translateX(-40px);opacity:0}}@keyframes fcr{from{transform:translateX(40px);opacity:0}}
+#clash .nm{font:700 18px/1.2 var(--brush);letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#clash .tr{font-size:13px;opacity:.85}
+#clash .dm{font:900 22px/1.1 var(--brush);color:#ff8a6a;min-height:26px;text-shadow:2px 2px 0 #000}
+#clash .dm.pop{animation:dmp .45s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes dmp{from{transform:scale(2.2);opacity:0}}
+#clash .mid{font:700 26px/1 var(--brush);color:#f3dfa6;text-shadow:0 0 12px rgba(229,185,60,.7),2px 2px 0 #000;text-align:center;letter-spacing:.1em}
+#clash .mid small{display:block;font-size:12px;letter-spacing:.2em;color:#e9d9b0;margin-top:4px}
+#clash .slash{position:absolute;left:-10%;top:50%;width:120%;height:5px;background:linear-gradient(90deg,transparent,#fff7d6 40%,#fff 50%,#fff7d6 60%,transparent);transform:rotate(-14deg) scaleX(0);transform-origin:left center;box-shadow:0 0 18px #ffe9a8;opacity:0}
+#clash.hit .slash{animation:sl .32s ease-out forwards}
+@keyframes sl{0%{transform:rotate(-14deg) scaleX(0);opacity:1}70%{opacity:1}100%{transform:rotate(-14deg) scaleX(1);opacity:0}}
+#clash.gun .slash{background:radial-gradient(circle,#fff 0,#ffd36a 30%,transparent 70%);width:80px;height:80px;left:calc(50% - 40px);top:calc(50% - 40px);transform:none;border-radius:50%}
+#clash.gun.hit .slash{animation:mf .3s ease-out 3 forwards}
+@keyframes mf{0%{opacity:1;transform:scale(.4)}100%{opacity:0;transform:scale(1.6)}}
+#clash .rout{position:absolute;inset:0;display:grid;place-items:center;font:900 44px/1 var(--brush);color:#ffefc0;text-shadow:0 0 18px #c0301f,3px 3px 0 #000;letter-spacing:.3em;opacity:0}
+#clash.routed .rout{animation:rt .5s ease-out .1s forwards}
+@keyframes rt{from{opacity:0;transform:scale(1.8)}to{opacity:1}}
+@media(max-width:600px){#clash .fc{width:52px;height:52px}#clash .nm{font-size:15px}#clash .mid{font-size:20px}#clash .bd{padding:8px 10px}}
+.mflash{animation:mfl .35s ease-out forwards}@keyframes mfl{from{opacity:1}to{opacity:0;transform:scale(2.4)}}
+.dust{animation:dst 1.1s ease-out forwards}@keyframes dst{from{opacity:.7}to{opacity:0;transform:translate(var(--dx),-8px) scale(2.6)}}
+.ink{animation:ink 1.6s ease-out forwards}@keyframes ink{0%{opacity:0;transform:scale(.3)}15%{opacity:.75;transform:scale(1)}100%{opacity:0;transform:scale(1.15)}}
+.pv{pointer-events:none}`;
+document.head.appendChild(st);
+
+/* ---------- 1. 地圖縮放、拖曳、鏡頭跟隨 ---------- */
+const CAM={x:0,y:0,w:VW,h:VH};let camT=0;
+const isZoom=()=>CAM.w<VW*.98;
+function camClamp(){CAM.w=clamp(CAM.w,VW*.34,VW);CAM.h=CAM.w*VH/VW;CAM.x=clamp(CAM.x,0,VW-CAM.w);CAM.y=clamp(CAM.y,0,VH-CAM.h);}
+function camApply(){camClamp();svg.setAttribute('viewBox',`${CAM.x.toFixed(1)} ${CAM.y.toFixed(1)} ${CAM.w.toFixed(1)} ${CAM.h.toFixed(1)}`);
+  svg.classList.toggle('zoomed',isZoom());svg.style.touchAction=isZoom()?'none':'pan-x pan-y';}
+function camZoom(f,cx,cy){   // f<1 放大；(cx,cy) 以 viewBox 座標為中心
+  if(cx==null){cx=CAM.x+CAM.w/2;cy=CAM.y+CAM.h/2;}
+  const nw=clamp(CAM.w*f,VW*.34,VW),k=nw/CAM.w;
+  CAM.x=cx-(cx-CAM.x)*k;CAM.y=cy-(cy-CAM.y)*k;CAM.w=nw;camApply();
+}
+function camTo(tx,ty,tw,ms=380){   // 平滑移動
+  cancelAnimationFrame(camT);const s={...CAM},t0=performance.now(),d=ms/SPEED;
+  tw=tw||CAM.w;
+  const tick=now=>{const k=Math.min(1,(now-t0)/d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    CAM.w=s.w+(tw-s.w)*e;CAM.h=CAM.w*VH/VW;CAM.x=s.x+((tx-CAM.w/2)-s.x)*e;CAM.y=s.y+((ty-CAM.h/2)-s.y)*e;camApply();if(k<1)camT=requestAnimationFrame(tick);};
+  camT=requestAnimationFrame(tick);
+}
+window.camFocus=(a,b)=>{if(!isZoom()||!a)return;const [x1,y1]=px(a.c,a.r),[x2,y2]=b?px(b.c,b.r):[x1,y1];
+  const mx=(x1+x2)/2,my=(y1+y2)/2;if(mx>CAM.x+CAM.w*.18&&mx<CAM.x+CAM.w*.82&&my>CAM.y+CAM.h*.18&&my<CAM.y+CAM.h*.82)return;camTo(mx,my);};
+const toVB=(clientX,clientY)=>{const r=svg.getBoundingClientRect();return [CAM.x+(clientX-r.left)/r.width*CAM.w,CAM.y+(clientY-r.top)/r.height*CAM.h];};
+svg.addEventListener('wheel',e=>{if(!state||!state.player)return;e.preventDefault();const [x,y]=toVB(e.clientX,e.clientY);camZoom(e.deltaY>0?1.15:1/1.15,x,y);},{passive:false});
+const P=new Map();let drag=null,pinch=null,moved=false;
+svg.addEventListener('pointerdown',e=>{P.set(e.pointerId,[e.clientX,e.clientY]);moved=false;
+  if(P.size===1)drag={x:e.clientX,y:e.clientY,cx:CAM.x,cy:CAM.y};
+  else if(P.size===2){const [a,b]=[...P.values()];pinch={d:Math.hypot(a[0]-b[0],a[1]-b[1]),w:CAM.w,c:toVB((a[0]+b[0])/2,(a[1]+b[1])/2)};drag=null;}});
+svg.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.pointerId,[e.clientX,e.clientY]);
+  if(pinch&&P.size===2){const [a,b]=[...P.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(d>10){const nw=pinch.w*pinch.d/d;camZoom(nw/CAM.w,pinch.c[0],pinch.c[1]);moved=true;}return;}
+  if(drag&&isZoom()){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(!moved&&Math.hypot(dx,dy)<7)return;moved=true;svg.classList.add('dragging');
+    const r=svg.getBoundingClientRect();CAM.x=drag.cx-dx/r.width*CAM.w;CAM.y=drag.cy-dy/r.height*CAM.h;camApply();}});
+const up=e=>{P.delete(e.pointerId);if(P.size<2)pinch=null;if(!P.size){drag=null;svg.classList.remove('dragging');}};
+svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);svg.addEventListener('pointerleave',up);
+svg.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;}},true);   // 拖曳後放開不算點擊
+const _bb=buildBoard;buildBoard=function(){_bb();Object.assign(CAM,{x:0,y:0,w:VW,h:VH});camApply();addPv();};
+const ui=document.createElement('div');ui.className='zoomui';
+ui.innerHTML='<button type="button" data-z="in" title="放大">＋</button><button type="button" data-z="out" title="縮小">－</button><button type="button" data-z="fit" title="看全圖">⤢</button><button type="button" data-z="cl" title="合戰特寫">🎬<small></small></button>';
+const MW=document.querySelector('.mapwrap');MW.style.position='relative';MW.appendChild(ui);
+const CLN={name:'名將',all:'全部',off:'關'};let CL='name';try{CL=localStorage.getItem('sekiClash')||'name'}catch(e){}
+const clLbl=()=>{const b=ui.querySelector('[data-z=cl]');b.querySelector('small').textContent=CLN[CL];b.classList.toggle('on',CL!=='off');b.title='合戰特寫：'+CLN[CL];};clLbl();
+ui.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const z=b.dataset.z;
+  if(z==='in')camZoom(1/1.35);else if(z==='out')camZoom(1.35);else if(z==='fit')camTo(VW/2,VH/2,VW);
+  else{CL=CL==='name'?'all':CL==='all'?'off':'name';try{localStorage.setItem('sekiClash',CL)}catch(er){}clLbl();}});
+try{if(!localStorage.getItem('sekiZoomHint')){const h=document.createElement('div');h.className='zhint';h.textContent='滾輪／雙指可以縮放，放大後拖曳移動地圖';MW.appendChild(h);setTimeout(()=>h.remove(),6000);localStorage.setItem('sekiZoomHint','1');}}catch(e){}
+
+/* ---------- 2. 名將棋子換成立繪 ---------- */
+const _tok=tokenSVG;tokenSVG=function(u){
+  let s=_tok(u);if(!PORT.includes(u.id))return s;
+  const g=u.state==='waver'||u.state==='out'?' style="filter:grayscale(.7)"':'';
+  return s.replace(/<text class="utxt"[^>]*>[^<]*<\/text>/,`<clipPath id="cp-${u.id}"><circle r="12.4"/></clipPath><image href="img/p_${u.id}.webp" x="-12.4" y="-12.4" width="24.8" height="24.8" clip-path="url(#cp-${u.id})" preserveAspectRatio="xMidYMin slice"${g}/>`);
+};
+
+/* ---------- 3. 合戰特寫＋槍火、揚塵、墨飛沫 ---------- */
+const box=document.createElement('div');box.id='clash';
+box.innerHTML='<div class="bd"><div class="sd l"></div><div class="mid"></div><div class="sd r"></div><div class="slash"></div><div class="rout">潰走</div></div>';
+MW.appendChild(box);
+let clashN=0;const _bp=beginPhase;beginPhase=async function(side){clashN=0;return _bp(side);};
+const sideHTML=(u,cls)=>`<div class="fc">${PORT.includes(u.id)?`<img src="img/p_${u.id}.webp" alt="">`:crestOf(u,60)}</div><div style="min-width:0"><div class="nm" style="color:${u.side==='E'?'#a9c1ea':'#f0a49b'}">${u.name}</div><div class="tr">${UT[utype(u)].n}・<span class="tn">${u.troops.toLocaleString()}</span> 人</div><div class="dm"></div></div>`;
+function wantClash(a,d){
+  if(CL==='off'||SPEED>=3)return false;
+  if(CL==='all')return true;
+  if(!PORT.includes(a.id)&&!PORT.includes(d.id))return false;
+  return isAI(state.phase)?clashN<3:true;   // 電腦回合最多 3 次，避免太冗長
+}
+function fxMore(a,d,ranged){
+  const [x1,y1]=px(a.c,a.r),[x2,y2]=px(d.c,d.r);
+  if(ranged){for(let i=0;i<5;i++){const c=fxEl('circle',{cx:x1+rand(-10,10),cy:y1+rand(-10,6),r:rand(3,5.5),fill:i%2?'#fff3c0':'#ffb43a'},'mflash',420);c.style.transformOrigin=`${c.getAttribute('cx')}px ${c.getAttribute('cy')}px`;c.style.animationDelay=(i*55)+'ms';}}
+  else if(utype(a)==='cav'){const ang=Math.atan2(y1-y2,x1-x2);for(let i=0;i<7;i++){const c=fxEl('circle',{cx:x1+Math.cos(ang)*rand(6,16)+rand(-5,5),cy:y1+Math.sin(ang)*rand(6,16)+rand(-3,6),r:rand(3,6),fill:'#a68a5c'},'dust',1150);c.style.setProperty('--dx',(Math.cos(ang)*14).toFixed(1)+'px');c.style.transformOrigin=`${c.getAttribute('cx')}px ${c.getAttribute('cy')}px`;c.style.animationDelay=(i*40)+'ms';}}
+  setTimeout(()=>{for(let i=0;i<6;i++){const e=fxEl('ellipse',{cx:x2+rand(-13,13),cy:y2+rand(-11,9),rx:rand(1.5,5),ry:rand(1.2,3.5),fill:'#1b130c',transform:`rotate(${rand(0,180)} ${x2} ${y2})`},'ink',1650);e.style.transformOrigin=`${x2}px ${y2}px`;}},ranged?240:160);
+}
+const _atk=attack;attack=async function(att,def,ranged,amb){
+  if(AUTO)return _atk(att,def,ranged,amb);
+  camFocus(att,def);fxMore(att,def,ranged);
+  if(!wantClash(att,def))return _atk(att,def,ranged,amb);
+  clashN++;
+  const L=att.side==='E'?att:def,Rr=att.side==='E'?def:att,t0={[att.id]:att.troops,[def.id]:def.troops};
+  box.querySelector('.l').innerHTML=sideHTML(L);box.querySelector('.r').innerHTML=sideHTML(Rr);
+  box.querySelector('.mid').innerHTML=`${amb?'奇襲':ranged?'齊射':utype(att)==='cav'?'突擊':'激突'}<small>${att.name}${ranged?'→':'⚔'}${def.name}</small>`;
+  box.className='show'+(ranged?' gun':'');await sleep(420);box.classList.add('hit');
+  await _atk(att,def,ranged,amb);
+  for(const [u,el] of [[L,box.querySelector('.l')],[Rr,box.querySelector('.r')]]){const lost=t0[u.id]-u.troops;el.querySelector('.tn').textContent=Math.max(0,u.troops).toLocaleString();
+    const dm=el.querySelector('.dm');dm.textContent=lost>0?'−'+lost.toLocaleString():'';dm.classList.remove('pop');void dm.offsetWidth;dm.classList.add('pop');}
+  if(def.state==='routed'||att.state==='routed')box.classList.add('routed');
+  await sleep(def.state==='routed'?1100:780);box.classList.add('out');await sleep(260);box.className='';
+};
+
+/* ---------- 4. 移動路線預覽（滑鼠移到白色格子上） ---------- */
+let pv=null;function addPv(){pv=document.createElementNS(NS,'g');pv.setAttribute('class','pv');const hl=document.getElementById('hl');hl.parentNode.insertBefore(pv,hl.nextSibling);}
+function pathTo(u,c,r){const goal=key(c,r),prev=new Map([[key(u.c,u.r),null]]),q=[[u.c,u.r]];
+  while(q.length){const [x,y]=q.shift();if(key(x,y)===goal)break;for(const [nx,ny] of nbrs(x,y)){const k=key(nx,ny);if(prev.has(k)||!R.has(k))continue;prev.set(k,key(x,y));q.push([nx,ny]);}}
+  if(!prev.has(goal))return null;const out=[];for(let k=goal;k;k=prev.get(k))out.unshift(k.split(',').map(Number));return out;}
+svg.addEventListener('pointermove',e=>{if(e.pointerType==='touch'||!pv)return;pv.innerHTML='';
+  if(!sel||busy||!R.size)return;const h=e.target.closest('polygon[data-c]');if(!h)return;const c=+h.dataset.c,r=+h.dataset.r;if(!R.has(key(c,r)))return;
+  const p=pathTo(sel,c,r);if(!p||p.length<2)return;const pts=p.map(([x,y])=>px(x,y)),[ex,ey]=pts.at(-1),[bx,by]=pts.at(-2),a=Math.atan2(ey-by,ex-bx);
+  pv.innerHTML=`<polyline points="${pts.map(q=>q.join(',')).join(' ')}" fill="none" stroke="#2a1d12" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".35"/><polyline points="${pts.map(q=>q.join(',')).join(' ')}" fill="none" stroke="#f6e7b8" stroke-width="2.6" stroke-dasharray="7 5" stroke-linecap="round" stroke-linejoin="round"/><path d="M${ex+Math.cos(a)*7} ${ey+Math.sin(a)*7} L${ex+Math.cos(a+2.5)*9} ${ey+Math.sin(a+2.5)*9} L${ex+Math.cos(a-2.5)*9} ${ey+Math.sin(a-2.5)*9}Z" fill="#f6e7b8" stroke="#2a1d12" stroke-width="1"/>`;});
+const _rh=renderHL;renderHL=function(){_rh();if(pv&&(!sel||!R.size))pv.innerHTML='';};
+})();
 if(AUTO&&/scn=(\w+)/.test(location.search)){startScn(location.search.match(/scn=(\w+)/)[1],1);}
 else if(AUTO&&/retreat=1/.test(location.search)){startRetreat(1);}
 else if(AUTO){startGame(/side=W/.test(location.search)?'W':'E',1);}
