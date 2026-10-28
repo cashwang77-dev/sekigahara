@@ -2174,6 +2174,37 @@ async function scnEnd(winner,why){
     <p style="font-size:13.5px;color:var(--muted)">${mode==='otani'?'評定：撐到未刻結束且造成傷亡 ≥5000 特、≥3000 甲、≥2000 乙；戰死但 ≥3000 丙。':'評定：戰損比 ≥1.8 特、≥1.4 甲、≥1.15 乙、≥1 丙。'}</p>${SHAREBTN}${XPROMO}`,btns,'scroll');
   if(res===1)startScn(mode,state.diff);else if(res===2)startRetreat(state.diff);else if(res===3)startGame('E',state.diff,true);else location.reload();
 }
+/* ---------- 配樂音檔（2026-10-29）：fog／battle／climax／end 四段 mp3，依 AU.mode 交叉淡入淡出；
+   走 Web Audio（createMediaElementSource → AU.mus）所以「配樂」開關照常有效；音檔載不到就退回原本的合成配樂 ---------- */
+const BGM={files:{fog:'audio/fog.mp3',battle:'audio/battle.mp3',climax:'audio/climax.mp3',end:'audio/end.mp3'},el:{},g:{},cur:null,ok:false};
+function bgmInit(){
+  if(BGM.inited||!AU.c)return;BGM.inited=true;
+  for(const [k,f] of Object.entries(BGM.files)){
+    const e=new Audio(f);e.loop=true;e.preload='auto';e.crossOrigin='anonymous';
+    e.addEventListener('canplaythrough',()=>{BGM.ok=true;},{once:true});
+    e.addEventListener('error',()=>{e._bad=true;});
+    const g=AU.c.createGain();g.gain.value=0;AU.c.createMediaElementSource(e).connect(g).connect(AU.mus);
+    BGM.el[k]=e;BGM.g[k]=g;
+  }
+}
+function bgmTick(){
+  if(!AU.c||!BGM.inited)return;
+  const want=AU.mode==='off'?null:(BGM.el[AU.mode]&&!BGM.el[AU.mode]._bad?AU.mode:null);
+  if(want===BGM.cur)return;
+  const now=AU.c.currentTime;
+  if(BGM.cur){const old=BGM.cur;BGM.g[old].gain.setTargetAtTime(0,now,.9);setTimeout(()=>{if(BGM.cur!==old)BGM.el[old].pause();},4000);}
+  BGM.cur=want;
+  if(want){const e=BGM.el[want];if(want==='end')e.currentTime=0;e.play().catch(()=>{});BGM.g[want].gain.setTargetAtTime(want==='fog'?.9:1,now,1.2);}
+}
+const bgmOn=()=>BGM.ok&&BGM.cur&&BGM.el[BGM.cur]&&!BGM.el[BGM.cur].paused;
+{const _ms=musicStart;musicStart=function(){_ms();bgmInit();bgmTick();};}
+{const _mt=musicTick;musicTick=function(){
+  bgmTick();
+  if(!bgmOn())return _mt();
+  // 音檔在播：合成的鼓點與持續音收掉，只留一點風聲當環境音
+  const now=AU.c.currentTime;
+  AU.wind.g.gain.setTargetAtTime(AU.mode==='fog'?.05:.015,now,1.5);AU.rumble.g.gain.setTargetAtTime(0,now,1.5);AU.drone.gain.setTargetAtTime(0,now,1.5);
+};}
 /* ================= v6 臨場感（2026-10-29）：地圖縮放拖曳＋鏡頭跟隨、名將立繪棋子、合戰特寫、槍火揚塵墨飛沫、移動路線預覽 ================= */
 (()=>{if(AUTO)return;
 const st=document.createElement('style');st.textContent=`
