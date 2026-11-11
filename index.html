@@ -886,15 +886,18 @@ function crest(kind,ch,size=56,col='#2a2118',bg='#f6f0e1'){
 const crestOf=(u,size)=>crest(CREST[u.id]||'char',u.short,size);
 /* ================= v4 立繪・插畫 ================= */
 const PORT=['ieyasu','honda','ii','fukushima','kuroda','hosokawa','todo','masanobu','ishida','sakon','otani','shimazu','ukita','koba','kikkawa','mori'];
+// 11/11 補齊其餘 19 支部隊立繪（PORT 仍代表「名將」：合戰特寫、潰走過場用；有沒有臉看 hasFace）
+const FACES=[...PORT,'konishi','hiratsuka','wakisaka','kutsuki','ogawa','akaza','ankokuji','natsuka','tadayoshi','kato','tanaka','tsutsui','oda','kyogoku','terazawa','ikeda','chosokabe','asano','yamauchi'];
+const hasFace=id=>FACES.includes(id);
 const SCENES=['fog','betray','teppo','bento','otani','shimazu','winE','winW','council','sakon','duel','mori'];
 const face=(id,size,side)=>`<img class="face ${(side||'').toLowerCase()}" src="img/p_${id}.webp" style="width:${size}px;height:${size}px" alt="">`;
-const faceOf=(u,size)=>u&&PORT.includes(u.id)?face(u.id,size,u.side):crestOf(u,size);
+const faceOf=(u,size)=>u&&hasFace(u.id)?face(u.id,size,u.side):crestOf(u,size);
 const sceneImg=n=>n?`<div class="scene"><img src="img/e_${n}.jpg" alt=""></div>`:'';
 if(!AUTO) window.addEventListener('load',()=>setTimeout(()=>[...PORT.map(i=>`img/p_${i}.webp`),...SCENES.map(n=>`img/e_${n}.jpg`)].forEach(s=>{const i=new Image();i.src=s;}),800));
 async function cutin(u,title,line){
   if(AUTO||!u) return;
   const c=document.getElementById('cutin'),im=c.querySelector('img'),tx=c.querySelector('.tx');
-  const has=PORT.includes(u.id);im.style.display=has?'':'none';if(has)im.src=`img/p_${u.id}.webp`;
+  const has=hasFace(u.id);im.style.display=has?'':'none';if(has)im.src=`img/p_${u.id}.webp`;
   tx.style.left=has?'':'6%';
   tx.innerHTML=`<div class="nm">${u.name}</div><div class="sk">${title}</div>${line?_L`<div class="ln">「${line}」</div>`:''}`;
   c.className='show '+u.side.toLowerCase();
@@ -2606,7 +2609,7 @@ try{if(!localStorage.getItem('sekiZoomHint')){const h=document.createElement('di
 
 /* ---------- 2. 名將棋子換成立繪 ---------- */
 const _tok=tokenSVG;tokenSVG=function(u){
-  let s=_tok(u);if(!PORT.includes(u.id))return s;
+  let s=_tok(u);if(!hasFace(u.id))return s;
   const g=u.state==='waver'||u.state==='out'?' style="filter:grayscale(.7)"':'';
   return s.replace(/<text class="utxt"[^>]*>[^<]*<\/text>/,`<clipPath id="cp-${u.id}"><circle r="12.4"/></clipPath><image href="img/p_${u.id}.webp" x="-12.4" y="-12.4" width="24.8" height="24.8" clip-path="url(#cp-${u.id})" preserveAspectRatio="xMidYMin slice"${g}/>`);
 };
@@ -2616,7 +2619,7 @@ const box=document.createElement('div');box.id='clash';
 box.innerHTML=_L('<div class="bd"><div class="sd l"></div><div class="mid"></div><div class="sd r"></div><div class="slash"></div><div class="rout">潰走</div></div>');
 MW.appendChild(box);
 let clashN=0;const _bp=beginPhase;beginPhase=async function(side){clashN=0;return _bp(side);};
-const sideHTML=(u,cls)=>_L`<div class="fc">${PORT.includes(u.id)?`<img src="img/p_${u.id}.webp" alt="">`:crestOf(u,60)}</div><div style="min-width:0"><div class="nm" style="color:${u.side==='E'?'#a9c1ea':'#f0a49b'}">${u.name}</div><div class="tr">${UT[utype(u)].n}・<span class="tn">${u.troops.toLocaleString()}</span> 人</div><div class="dm"></div></div>`;
+const sideHTML=(u,cls)=>_L`<div class="fc">${hasFace(u.id)?`<img src="img/p_${u.id}.webp" alt="">`:crestOf(u,60)}</div><div style="min-width:0"><div class="nm" style="color:${u.side==='E'?'#a9c1ea':'#f0a49b'}">${u.name}</div><div class="tr">${UT[utype(u)].n}・<span class="tn">${u.troops.toLocaleString()}</span> 人</div><div class="dm"></div></div>`;
 function wantClash(a,d){
   if(CL==='off'||SPEED>=3)return false;
   if(CL==='all')return true;
@@ -2721,7 +2724,7 @@ document.getElementById('mapbox').appendChild(fall);
 const _die=fxDie;fxDie=function(u){
   _die(u);scatter(u);
   if(!PORT.includes(u.id)&&!u.cmd&&u.max<8000)return;
-  fall.querySelector('.fc').innerHTML=PORT.includes(u.id)?`<img src="img/p_${u.id}.webp" alt="">`:crestOf(u,90);
+  fall.querySelector('.fc').innerHTML=hasFace(u.id)?`<img src="img/p_${u.id}.webp" alt="">`:crestOf(u,90);
   fall.querySelector('b').textContent=u.cmd?_L`${u.name} 本陣崩潰`:_L`${u.name}隊 潰走`;
   fall.querySelector('small').textContent=_L`${SN[u.side]}・殘兵 ${Math.max(0,u.troops).toLocaleString()} 人四散`;
   fall.className='';void fall.offsetWidth;fall.className='show '+u.side.toLowerCase();
@@ -2836,7 +2839,7 @@ function vetSave(v){try{localStorage.setItem('sekiVet',JSON.stringify(v))}catch(
 function vetLv(xp){let l=1;VET_LV.forEach((t,i)=>{if(xp>=t)l=i+1;});return l;}
 let VET=vetLoad();
 const myCmd=u=>!AUTO&&state&&!state.hot&&u.side===state.player&&(state.mode!=='koba'||!!u.kctl);
-const lvOf=u=>PORT.includes(u.id)?vetLv((VET[u.id]||{}).xp||0):1;
+const lvOf=u=>hasFace(u.id)?vetLv((VET[u.id]||{}).xp||0):1;
 {const _c=calc;calc=function(att,def,ranged,rnd){const p=_c(att,def,ranged,rnd);
   if(myCmd(att)){const l=lvOf(att);if(l>1)p.dd=Math.round(p.dd*(1+.03*(l-1)));}
   if(myCmd(def)){const l=lvOf(def);if(l>1)p.da=Math.round(p.da*(1-.02*(l-1)));}
@@ -2855,7 +2858,7 @@ function lvToast(lines){
   if(state.over||AUTO)return _go(winner,why);
   const mode=state.mode||('main'+state.player),hot=state.hot,ups=[];
   if(!hot){
-    for(const u of units){if(!PORT.includes(u.id)||!myCmd(u)||u.group==='reserve'||u.state==='waver'||u.state==='out')continue;
+    for(const u of units){if(!hasFace(u.id)||!myCmd(u)||u.group==='reserve'||u.state==='waver'||u.state==='out')continue;
       const v=VET[u.id]||(VET[u.id]={xp:0,n:0}),l0=vetLv(v.xp);v.xp+=u.dealt||0;v.n++;
       const l1=vetLv(v.xp);if(l1>l0)ups.push(_L`${faceOf(u,34)}<span><b>${u.name}</b> 升到 <b>Lv${l1}</b>（累計戰功 ${v.xp.toLocaleString()}）</span>`);}
     vetSave(VET);
@@ -2875,7 +2878,7 @@ function lvToast(lines){
   const b2=document.createElement('button');b2.className='link-btn';b2.textContent=_L('戰役圖');row.insertBefore(b2,row.firstChild);
   const nm=id=>(UDEF.find(x=>x[0]===id)||[])[1]||id,sd=id=>(UDEF.find(x=>x[0]===id)||[])[3]||'E';
   b1.onclick=()=>{VET=vetLoad();
-    const cards=PORT.filter(id=>UDEF.some(x=>x[0]===id)).map(id=>{const v=VET[id]||{xp:0,n:0},l=vetLv(v.xp),nx=VET_LV[l]||null,p0=VET_LV[l-1];
+    const cards=FACES.filter(id=>UDEF.some(x=>x[0]===id)).map(id=>{const v=VET[id]||{xp:0,n:0},l=vetLv(v.xp),nx=VET_LV[l]||null,p0=VET_LV[l-1];
       const pc=nx?Math.round((v.xp-p0)/(nx-p0)*100):100,nxT=nx?_L` ／ 下一級 ${nx.toLocaleString()}`:_L('（已滿級）'),xpTxt=_L`戰功 ${v.xp.toLocaleString()}${nxT}・出陣 ${v.n} 次`;
       return `<div class="vet ${sd(id).toLowerCase()}"><img src="img/p_${id}.webp" alt=""><div><b>${nm(id)}</b><span class="lv">Lv${l}</span><div class="xb"><i style="width:${pc}%"></i></div><small>${xpTxt}</small></div></div>`;}).join('');
     modal(_L`<h2>名將錄</h2><div class="mt">你親自指揮的名將會累積戰功（造成的敵軍傷亡）而升級：每級攻擊 +3%、承受傷害 -2%，最高 Lv5。</div><div class="vets">${cards}</div>`,[[_L('關閉'),0]],'scroll');};
